@@ -8,8 +8,6 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a;background:#fff}
-
-    /* LOGIN */
     #loginScreen{position:fixed;inset:0;background:#f5f7fa;display:flex;align-items:center;justify-content:center;z-index:9999}
     .login-box{background:white;border:1px solid #ddd;border-radius:12px;padding:32px;width:340px;text-align:center}
     .login-icon{width:52px;height:52px;background:#185FA5;border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-size:26px;margin:0 auto 16px}
@@ -20,10 +18,8 @@
     .login-btn{width:100%;padding:10px;background:#185FA5;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
     .login-btn:hover{background:#0C447C}
     .login-err{color:#c0392b;font-size:12px;margin-top:8px;display:none}
-
-    /* LAYOUT */
     .app{display:flex;height:100vh}
-    .sidebar{width:214px;background:#f8f8f8;border-right:0.5px solid #ddd;display:flex;flex-direction:column;flex-shrink:0}
+    .sidebar{width:218px;background:#f8f8f8;border-right:0.5px solid #ddd;display:flex;flex-direction:column;flex-shrink:0}
     .sb-logo{padding:16px;border-bottom:0.5px solid #ddd;display:flex;align-items:center;gap:10px}
     .sb-icon{width:30px;height:30px;background:#185FA5;border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;font-size:16px}
     .sb-title{font-size:13px;font-weight:600}
@@ -38,10 +34,8 @@
     .avatar{width:28px;height:28px;background:#e6f1fb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#0C447C;flex-shrink:0}
     .sb-user-info{font-size:12px;font-weight:500}
     .sb-user-role{font-size:11px;color:#999}
-    .logout-btn{background:none;border:none;font-size:11px;color:#999;cursor:pointer;padding:4px 8px;border-radius:4px}
+    .logout-btn{background:none;border:none;font-size:11px;color:#999;cursor:pointer;padding:4px 8px;border-radius:4px;display:flex;align-items:center;gap:4px;width:100%}
     .logout-btn:hover{background:#f0f0f0;color:#333}
-
-    /* MAIN */
     .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
     .topbar{padding:13px 22px;border-bottom:0.5px solid #ddd;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
     .page-title{font-size:15px;font-weight:600}
@@ -52,88 +46,80 @@
     .content{flex:1;overflow-y:auto;padding:22px}
     .page{display:none}
     .page.active{display:block}
-
-    /* BUTTONS */
     .btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;border:0.5px solid #ddd;background:white;font-size:13px;cursor:pointer;color:#333;font-family:inherit;font-weight:500}
     .btn:hover{background:#f5f5f5}
     .btn-primary{background:#185FA5;color:white;border-color:#185FA5}
     .btn-primary:hover{background:#0C447C}
+    .btn-success{background:#2e7d32;color:white;border-color:#2e7d32}
+    .btn-success:hover{background:#1b5e20}
+    .btn-warning{background:#f57c00;color:white;border-color:#f57c00}
+    .btn-warning:hover{background:#e65100}
     .btn-danger{background:#fde8e8;color:#c0392b;border-color:#f5b7b7}
     .btn-danger:hover{background:#f5c6c6}
     .btn-sm{padding:4px 10px;font-size:12px}
-    .icon-btn{width:28px;height:28px;border-radius:6px;border:0.5px solid #ddd;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#999}
-    .icon-btn:hover{background:#f5f5f5;color:#333}
-
-    /* CARDS */
+    .icon-btn{width:30px;height:30px;border-radius:7px;border:0.5px solid #ddd;background:white;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#666;font-size:14px;transition:all .15s}
+    .icon-btn:hover{background:#f0f0f0;color:#185FA5;border-color:#185FA5}
+    .icon-btn.danger:hover{background:#fde8e8;color:#c0392b;border-color:#f5b7b7}
+    .icon-btn.success:hover{background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7}
     .card{background:white;border:0.5px solid #ddd;border-radius:8px;margin-bottom:16px}
     .card-body{padding:16px 20px}
     .card-head{padding:14px 20px;border-bottom:0.5px solid #ddd;display:flex;align-items:center;justify-content:space-between}
     .card-head h3{font-size:13px;font-weight:600}
-
-    /* STATS */
     .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
-    .stat-card{background:#f9f9f9;border-radius:8px;padding:14px 16px}
-    .stat-label{font-size:11px;color:#999;margin-bottom:6px}
-    .stat-value{font-size:22px;font-weight:600}
+    .stat-card{background:#f9f9f9;border-radius:8px;padding:14px 16px;border:0.5px solid #eee}
+    .stat-label{font-size:11px;color:#999;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+    .stat-value{font-size:22px;font-weight:700}
     .stat-sub{font-size:11px;color:#bbb;margin-top:4px}
-
-    /* TABLE */
     table{width:100%;border-collapse:collapse;font-size:13px}
-    thead th{font-size:11px;color:#999;font-weight:600;padding:9px 12px;text-align:left;border-bottom:0.5px solid #ddd}
-    tbody td{padding:10px 12px;border-bottom:0.5px solid #f0f0f0}
+    thead th{font-size:11px;color:#999;font-weight:600;padding:9px 12px;text-align:left;border-bottom:0.5px solid #ddd;background:#fafafa}
+    tbody td{padding:9px 12px;border-bottom:0.5px solid #f0f0f0;vertical-align:middle}
     tbody tr:last-child td{border-bottom:none}
     tbody tr:hover{background:#fafafa}
-
-    /* BADGE */
-    .badge{display:inline-flex;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
     .badge-green{background:#e8f5e9;color:#2e7d32}
     .badge-blue{background:#e3f0fd;color:#1565c0}
     .badge-amber{background:#fef3e2;color:#b7620c}
     .badge-red{background:#fde8e8;color:#c0392b}
     .badge-gray{background:#f0f0f0;color:#666}
     .badge-teal{background:#e0f7f0;color:#00695c}
+    .badge-purple{background:#f3e5f5;color:#7b1fa2}
     .team-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
     .team-row{display:flex;align-items:center;gap:7px}
-
-    /* FORMS */
+    .team-logo{width:26px;height:26px;border-radius:5px;object-fit:contain;border:1px solid #eee;background:white;padding:2px}
     .form-row{margin-bottom:14px}
     .form-label{font-size:12px;color:#555;display:block;margin-bottom:5px;font-weight:500}
-    .form-input{width:100%;padding:8px 12px;border:0.5px solid #ddd;border-radius:6px;font-family:inherit;font-size:13px}
-    .form-input:focus{outline:none;border-color:#185FA5}
+    .form-input{width:100%;padding:8px 12px;border:0.5px solid #ddd;border-radius:6px;font-family:inherit;font-size:13px;color:#1a1a1a}
+    .form-input:focus{outline:none;border-color:#185FA5;box-shadow:0 0 0 2px rgba(24,95,165,.1)}
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-
-    /* MODAL */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:none;align-items:center;justify-content:center}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
     .modal-overlay.show{display:flex}
-    .modal{background:white;border-radius:10px;width:500px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-    .modal-head{padding:16px 20px;border-bottom:0.5px solid #ddd;display:flex;align-items:center;justify-content:space-between}
-    .modal-head h3{font-size:14px;font-weight:600}
+    .modal{background:white;border-radius:12px;width:520px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+    .modal-head{padding:16px 20px;border-bottom:0.5px solid #ddd;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:white;z-index:1}
+    .modal-head h3{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+    .modal-head .modal-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px}
     .modal-body{padding:20px}
-    .modal-foot{padding:14px 20px;border-top:0.5px solid #ddd;display:flex;justify-content:flex-end;gap:8px}
-
-    /* MATCH LIVE CONTROLS */
+    .modal-foot{padding:14px 20px;border-top:0.5px solid #ddd;display:flex;justify-content:flex-end;gap:8px;background:#fafafa;border-radius:0 0 12px 12px}
+    .close-btn{width:30px;height:30px;border-radius:7px;border:0.5px solid #ddd;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#666;font-size:16px}
+    .close-btn:hover{background:#fde8e8;color:#c0392b;border-color:#f5b7b7}
     .live-control-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
     .live-card{background:white;border:1px solid #ddd;border-radius:10px;overflow:hidden}
-    .live-card.is-live{border-color:#e05252}
+    .live-card.is-live{border-color:#e05252;box-shadow:0 0 0 2px rgba(224,82,82,.1)}
     .live-card-head{padding:10px 14px;background:#f9f9f9;border-bottom:0.5px solid #ddd;display:flex;align-items:center;justify-content:space-between}
     .live-card-body{padding:14px}
-    .score-control{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+    .score-control{display:flex;align-items:center;justify-content:space-between;padding:6px 0}
     .score-team-name{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;flex:1}
     .score-display{display:flex;align-items:center;gap:8px}
-    .score-big{font-size:24px;font-weight:700;min-width:36px;text-align:center}
-    .score-btn{width:28px;height:28px;border-radius:5px;border:0.5px solid #ddd;background:white;cursor:pointer;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center}
+    .score-big{font-size:26px;font-weight:700;min-width:36px;text-align:center;font-variant-numeric:tabular-nums}
+    .score-btn{width:30px;height:30px;border-radius:6px;border:0.5px solid #ddd;background:white;cursor:pointer;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:all .1s}
     .score-btn:hover{background:#f0f0f0}
     .score-btn.plus{background:#e3f0fd;border-color:#90caf9;color:#1565c0}
     .score-btn.plus:hover{background:#bbdefb}
     .live-card-foot{padding:10px 14px;border-top:0.5px solid #ddd;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-
-    /* PHASES */
     .phase-strip{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-    .phase-chip{padding:4px 12px;border-radius:4px;border:0.5px solid #ddd;font-size:12px;cursor:pointer;color:#666}
+    .phase-chip{padding:5px 14px;border-radius:20px;border:0.5px solid #ddd;font-size:12px;cursor:pointer;color:#666;font-weight:500}
+    .phase-chip:hover{border-color:#999}
     .phase-chip.active{background:#185FA5;color:white;border-color:#185FA5;font-weight:600}
-
-    /* TIMELINE */
     .tl{list-style:none}
     .tl-item{display:flex;gap:12px;padding-bottom:14px}
     .tl-dot-wrap{display:flex;flex-direction:column;align-items:center}
@@ -141,41 +127,59 @@
     .tl-line{width:1px;background:#eee;flex:1;margin-top:4px}
     .tl-text{font-size:13px;font-weight:500;margin-bottom:2px}
     .tl-meta{font-size:11px;color:#999}
-
-    /* TOAST */
-    .toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:white;padding:10px 18px;border-radius:8px;font-size:13px;z-index:9999;display:none;box-shadow:0 4px 20px rgba(0,0,0,.3)}
-    .toast.show{display:block;animation:fadeIn .2s}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:white;padding:10px 18px;border-radius:8px;font-size:13px;z-index:9999;display:none;box-shadow:0 4px 20px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px}
+    .toast.show{display:flex;animation:fadeUp .2s}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .logo-upload-area{border:2px dashed #ddd;border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:#fafafa}
+    .logo-upload-area:hover{border-color:#185FA5;background:#f0f7ff}
+    .logo-upload-area.has-logo{border-style:solid;border-color:#185FA5}
+    .logo-preview{width:72px;height:72px;border-radius:10px;object-fit:contain;margin:0 auto 8px;display:block;background:white;border:1px solid #eee;padding:4px}
+    .logo-placeholder{width:72px;height:72px;border-radius:10px;background:#e8f0fb;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:28px}
+    .logo-upload-text{font-size:12px;color:#999}
+    .logo-upload-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upload-progress{height:4px;background:#e3f0fd;border-radius:2px;margin-top:8px;overflow:hidden;display:none}
+    .upload-progress-bar{height:100%;background:#185FA5;width:0%;transition:width .3s;border-radius:2px}
+    .generate-box{background:linear-gradient(135deg,#e3f0fd,#f0e6ff);border:1px solid #c5d8f0;border-radius:10px;padding:16px;margin-bottom:16px}
+    .generate-box h4{font-size:13px;font-weight:700;color:#185FA5;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+    .pts-legend{display:flex;gap:12px;font-size:11px;color:#666;margin-top:6px}
+    .pts-legend span{display:flex;align-items:center;gap:4px}
+    .scorer-card{background:white;border:1px solid #ddd;border-radius:10px;overflow:hidden;margin-bottom:14px}
+    .scorer-head{padding:12px 16px;background:linear-gradient(135deg,#185FA5,#0C447C);color:white;display:flex;align-items:center;justify-content:space-between}
+    .scorer-body{padding:14px 16px}
+    .score-input-row{display:flex;align-items:center;gap:12px;padding:8px 0}
+    .score-input-num{width:70px;padding:6px 10px;border:2px solid #ddd;border-radius:8px;font-size:22px;font-weight:700;text-align:center;font-family:inherit}
+    .score-input-num:focus{outline:none;border-color:#185FA5}
+    .pts-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}
+    .pts-win{background:#e8f5e9;color:#2e7d32}
+    .pts-draw{background:#fff3e0;color:#f57c00}
+    .pts-loss{background:#fde8e8;color:#c0392b}
+    .score-divider{font-size:18px;color:#bbb;font-weight:300;padding:0 4px}
+    .action-bar{display:flex;gap:8px;padding-top:10px;border-top:0.5px solid #f0f0f0;margin-top:8px;flex-wrap:wrap}
+    .info-row{display:flex;gap:6px;align-items:center;font-size:12px;color:#999;margin-bottom:2px}
+    @media(max-width:768px){.stat-grid{grid-template-columns:1fr 1fr}.sidebar{display:none}}
   </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-icon">🏀</div>
     <div class="login-title">BaskAdmin</div>
     <div class="login-sub">Administration du tournoi</div>
-    <input type="text" class="login-input" id="loginUser" placeholder="Identifiant">
-    <input type="password" class="login-input" id="loginPass" placeholder="Mot de passe">
-    <button class="login-btn" onclick="doLogin()">Se connecter</button>
+    <input type="text" class="login-input" id="loginUser" placeholder="Identifiant" autocomplete="username">
+    <input type="password" class="login-input" id="loginPass" placeholder="Mot de passe" autocomplete="current-password">
+    <button class="login-btn" onclick="doLogin()"><i class="ti ti-login"></i> Se connecter</button>
     <div class="login-err" id="loginErr">Identifiant ou mot de passe incorrect</div>
   </div>
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastMsg"></span></div>
 
-<!-- APP -->
 <div class="app" id="mainApp" style="display:none">
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sb-logo">
       <div class="sb-icon">🏀</div>
-      <div>
-        <div class="sb-title">BaskAdmin</div>
-        <div class="sb-sub" id="sbSub">Tournoi 2025</div>
-      </div>
+      <div><div class="sb-title">BaskAdmin</div><div class="sb-sub" id="sbSub">Tournoi</div></div>
     </div>
     <div class="sb-section">
       <div class="sb-label">Vue générale</div>
@@ -190,6 +194,7 @@
     </div>
     <div class="sb-section">
       <div class="sb-label">Tournoi</div>
+      <div class="nav-item" onclick="nav('scorer',this)"><i class="ti ti-pencil-plus"></i>Saisie scores</div>
       <div class="nav-item" onclick="nav('live',this)"><i class="ti ti-live-view"></i>Scores live</div>
       <div class="nav-item" onclick="nav('bracket',this)"><i class="ti ti-tournament"></i>Tableau</div>
       <div class="nav-item" onclick="nav('settings',this)"><i class="ti ti-settings"></i>Paramètres</div>
@@ -197,16 +202,12 @@
     <div class="sb-footer">
       <div class="sb-user">
         <div class="avatar" id="userAvatar">A</div>
-        <div>
-          <div class="sb-user-info" id="userName">Admin</div>
-          <div class="sb-user-role">Administrateur</div>
-        </div>
+        <div><div class="sb-user-info" id="userName">Admin</div><div class="sb-user-role">Administrateur</div></div>
       </div>
       <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout"></i> Déconnexion</button>
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
     <div class="topbar">
       <span class="page-title" id="pageTitle">Tableau de bord</span>
@@ -221,19 +222,19 @@
       <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
         <div class="stat-grid">
-          <div class="stat-card"><div class="stat-label">Équipes</div><div class="stat-value" id="statTeams">—</div></div>
-          <div class="stat-card"><div class="stat-label">Matchs</div><div class="stat-value" id="statMatches">—</div><div class="stat-sub" id="statMatchesSub"></div></div>
-          <div class="stat-card"><div class="stat-label">En direct</div><div class="stat-value" id="statLive" style="color:#c0392b">—</div></div>
-          <div class="stat-card"><div class="stat-label">Terrains</div><div class="stat-value" id="statGrounds">—</div></div>
+          <div class="stat-card"><div class="stat-label"><i class="ti ti-users" style="color:#185FA5"></i>Équipes</div><div class="stat-value" id="statTeams">—</div></div>
+          <div class="stat-card"><div class="stat-label"><i class="ti ti-clipboard-list" style="color:#7b1fa2"></i>Matchs</div><div class="stat-value" id="statMatches">—</div><div class="stat-sub" id="statMatchesSub"></div></div>
+          <div class="stat-card"><div class="stat-label"><i class="ti ti-live-view" style="color:#c0392b"></i>En direct</div><div class="stat-value" id="statLive" style="color:#c0392b">—</div></div>
+          <div class="stat-card"><div class="stat-label"><i class="ti ti-map-pin" style="color:#00695c"></i>Terrains</div><div class="stat-value" id="statGrounds">—</div></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div>
-            <div style="font-size:13px;font-weight:600;margin-bottom:10px">Prochains matchs</div>
-            <div class="card"><div class="card-body" id="dashUpcoming"><div style="color:#bbb;font-size:13px;text-align:center;padding:20px">Chargement...</div></div></div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px"><i class="ti ti-clock" style="color:#185FA5"></i>Prochains matchs</div>
+            <div class="card"><div class="card-body" id="dashUpcoming"></div></div>
           </div>
           <div>
-            <div style="font-size:13px;font-weight:600;margin-bottom:10px">Activité récente</div>
-            <div class="card"><div class="card-body"><ul class="tl" id="dashActivity"><li style="color:#bbb;font-size:13px">Chargement...</li></ul></div></div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px"><i class="ti ti-history" style="color:#185FA5"></i>Activité récente</div>
+            <div class="card"><div class="card-body"><ul class="tl" id="dashActivity"></ul></div></div>
           </div>
         </div>
       </div>
@@ -241,12 +242,12 @@
       <!-- TEAMS -->
       <div class="page" id="page-teams">
         <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
-          <button class="btn btn-primary" onclick="openModal('team')"><i class="ti ti-plus"></i>Ajouter une équipe</button>
+          <button class="btn btn-primary" onclick="openModal('team')"><i class="ti ti-user-plus"></i>Ajouter une équipe</button>
         </div>
         <div class="card">
           <table>
-            <thead><tr><th>Équipe</th><th>Groupe</th><th>Joueurs</th><th>J</th><th>V/D</th><th>Statut</th><th></th></tr></thead>
-            <tbody id="teamsTable"><tr><td colspan="7" style="text-align:center;color:#bbb;padding:20px">Chargement...</td></tr></tbody>
+            <thead><tr><th>Équipe</th><th>Groupe</th><th>Joueurs</th><th>J</th><th>V / N / D</th><th>Pts</th><th>Statut</th><th style="width:80px">Actions</th></tr></thead>
+            <tbody id="teamsTable"></tbody>
           </table>
         </div>
       </div>
@@ -262,34 +263,50 @@
       <!-- GROUNDS -->
       <div class="page" id="page-grounds">
         <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
-          <button class="btn btn-primary" onclick="openModal('ground')"><i class="ti ti-plus"></i>Ajouter un terrain</button>
+          <button class="btn btn-primary" onclick="openModal('ground')"><i class="ti ti-map-pin"></i>Ajouter un terrain</button>
         </div>
         <div id="groundsList"></div>
       </div>
 
       <!-- MATCHES -->
       <div class="page" id="page-matches">
-        <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
-          <button class="btn btn-primary" onclick="openModal('match')"><i class="ti ti-plus"></i>Ajouter un match</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;flex-wrap:wrap">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="openModal('match')"><i class="ti ti-plus"></i>Ajouter un match</button>
+            <button class="btn btn-success" onclick="openGenerateModal()"><i class="ti ti-wand"></i>Générer des matchs</button>
+          </div>
         </div>
-        <div class="phase-strip">
-          <div class="phase-chip active" onclick="filterMatches('all',this)">Tous</div>
-          <div class="phase-chip" onclick="filterMatches('upcoming',this)">À venir</div>
-          <div class="phase-chip" onclick="filterMatches('live',this)">En direct</div>
-          <div class="phase-chip" onclick="filterMatches('done',this)">Terminés</div>
+        <div class="phase-strip" id="matchPhaseStrip">
+          <div class="phase-chip active" onclick="filterMatches('all',this)"><i class="ti ti-list"></i> Tous</div>
+          <div class="phase-chip" onclick="filterMatches('planned',this)"><i class="ti ti-calendar"></i> Planifiés</div>
+          <div class="phase-chip" onclick="filterMatches('upcoming',this)"><i class="ti ti-clock"></i> À venir</div>
+          <div class="phase-chip" onclick="filterMatches('live',this)"><i class="ti ti-live-view"></i> En direct</div>
+          <div class="phase-chip" onclick="filterMatches('done',this)"><i class="ti ti-check"></i> Terminés</div>
         </div>
         <div class="card">
           <table>
-            <thead><tr><th>#</th><th>Équipe A</th><th>Équipe B</th><th>Terrain</th><th>Horaire</th><th>Groupe/Phase</th><th>Statut</th><th></th></tr></thead>
-            <tbody id="matchesTable"><tr><td colspan="8" style="text-align:center;color:#bbb;padding:20px">Chargement...</td></tr></tbody>
+            <thead><tr><th>#</th><th>Équipe A</th><th>Score</th><th>Équipe B</th><th>Terrain</th><th>Horaire</th><th>Groupe / Phase</th><th>Statut</th><th style="width:70px">Actions</th></tr></thead>
+            <tbody id="matchesTable"></tbody>
           </table>
         </div>
       </div>
 
+      <!-- SCORER PAGE -->
+      <div class="page" id="page-scorer">
+        <p style="font-size:12px;color:#999;margin-bottom:16px;display:flex;align-items:center;gap:6px"><i class="ti ti-info-circle"></i>Page dédiée à la saisie des scores. Sélectionne un match pour entrer les scores directement.</p>
+        <div class="phase-strip" id="scorerFilter">
+          <div class="phase-chip active" onclick="filterScorer('all',this)">Tous</div>
+          <div class="phase-chip" onclick="filterScorer('live',this)">🔴 En direct</div>
+          <div class="phase-chip" onclick="filterScorer('upcoming',this)">À venir</div>
+          <div class="phase-chip" onclick="filterScorer('done',this)">Terminés</div>
+        </div>
+        <div id="scorerGrid"></div>
+      </div>
+
       <!-- LIVE SCORES -->
       <div class="page" id="page-live">
-        <p style="font-size:12px;color:#999;margin-bottom:14px">Modifie les scores et le statut des matchs en temps réel. La vue publique se met à jour instantanément.</p>
-        <div class="live-control-grid" id="liveGrid"><div style="color:#bbb;font-size:13px">Chargement...</div></div>
+        <p style="font-size:12px;color:#999;margin-bottom:14px;display:flex;align-items:center;gap:6px"><i class="ti ti-info-circle"></i>Contrôle rapide des scores. La vue publique se met à jour instantanément.</p>
+        <div class="live-control-grid" id="liveGrid"></div>
       </div>
 
       <!-- BRACKET -->
@@ -300,38 +317,88 @@
       <!-- SETTINGS -->
       <div class="page" id="page-settings">
         <div class="card" style="max-width:500px">
-          <div class="card-head"><h3>Informations du tournoi</h3></div>
+          <div class="card-head"><h3><i class="ti ti-settings" style="color:#185FA5"></i> Informations du tournoi</h3></div>
           <div class="card-body">
             <div class="form-row"><label class="form-label">Nom du tournoi</label><input class="form-input" id="settingName" placeholder="ex: Coupe Régionale 2025"></div>
             <div class="form-row"><label class="form-label">Sous-titre</label><input class="form-input" id="settingSubtitle" placeholder="ex: Phase de groupes · Saison 2025"></div>
-            <div class="form-row"><label class="form-label">Mot de passe admin</label><input class="form-input" type="password" id="settingPassword" placeholder="Nouveau mot de passe (laisser vide = inchangé)"></div>
+            <div class="form-row"><label class="form-label">Mot de passe admin</label><input class="form-input" type="password" id="settingPassword" placeholder="Laisser vide = inchangé"></div>
             <button class="btn btn-primary" onclick="saveSettings()"><i class="ti ti-device-floppy"></i>Enregistrer</button>
           </div>
         </div>
       </div>
 
-    </div><!-- /content -->
-  </div><!-- /main -->
-</div><!-- /app -->
-
-<!-- MODALS -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <div class="modal-head"><h3 id="modalTitle">Ajouter</h3><button class="icon-btn" onclick="closeModal()"><i class="ti ti-x"></i></button></div>
-    <div class="modal-body" id="modalBody"></div>
-    <div class="modal-foot">
-      <button class="btn" onclick="closeModal()">Annuler</button>
-      <button class="btn btn-primary" id="modalSaveBtn" onclick="saveModal()">Enregistrer</button>
     </div>
   </div>
 </div>
 
-<!-- FIREBASE -->
+<!-- MODAL PRINCIPAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle"><span class="modal-icon" id="modalIcon"></span>Ajouter</h3>
+      <button class="close-btn" onclick="closeModal()" title="Fermer"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()"><i class="ti ti-x"></i>Annuler</button>
+      <button class="btn btn-primary" id="modalSaveBtn" onclick="saveModal()"><i class="ti ti-device-floppy"></i>Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GÉNÉRATION -->
+<div class="modal-overlay" id="genModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3><span class="modal-icon" style="background:#e8f5e9;color:#2e7d32">🪄</span>Générer les matchs automatiquement</h3>
+      <button class="close-btn" onclick="closeGenModal()" title="Fermer"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="generate-box">
+        <h4><i class="ti ti-info-circle"></i>Comment ça marche ?</h4>
+        <p style="font-size:12px;color:#555">Tous les matchs possibles entre les équipes de chaque groupe seront générés (chaque équipe rencontre toutes les autres). Tu peux choisir le type de phase et le terrain.</p>
+        <div class="pts-legend">
+          <span>🏆 Victoire = <strong style="color:#2e7d32">2 pts</strong></span>
+          <span>🤝 Nul = <strong style="color:#f57c00">1 pt</strong></span>
+          <span>❌ Défaite = <strong style="color:#c0392b">0 pt</strong></span>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Type de phase *</label>
+        <select class="form-input" id="genPhase">
+          <option value="Brassage">Brassage</option>
+          <option value="Poule" selected>Poule</option>
+          <option value="Phase finale">Phase finale</option>
+          <option value="Quarts de finale">Quarts de finale</option>
+          <option value="Demi-finales">Demi-finales</option>
+          <option value="Finale">Finale</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Terrain par défaut</label>
+        <select class="form-input" id="genVenue">
+          <option value="">— Aucun / à définir —</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Groupes à inclure</label>
+        <div id="genGroupsCheck" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px"></div>
+      </div>
+      <div id="genPreview" style="margin-top:16px"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeGenModal()"><i class="ti ti-x"></i>Annuler</button>
+      <button class="btn" onclick="previewGenerate()"><i class="ti ti-eye"></i>Aperçu</button>
+      <button class="btn btn-success" onclick="confirmGenerate()"><i class="ti ti-wand"></i>Générer</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-// ⚠️ REMPLACE CES VALEURS PAR TA CONFIG FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyBO9fKLF4kkaDAux5SvyOORh-q4YDd_YeQ",
   authDomain: "tournoi-cll310.firebaseapp.com",
@@ -344,547 +411,608 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
+const storage = getStorage(fbApp);
+window._db = db; window._storage = storage;
+window._addDoc = addDoc; window._collection = collection; window._updateDoc = updateDoc;
+window._deleteDoc = deleteDoc; window._doc = doc; window._serverTimestamp = serverTimestamp;
 
-// ===== STATE =====
-window._db = db;
-window._teams = [];
-window._matches = [];
-window._groups = [];
-window._grounds = [];
-window._settings = {};
-window._matchFilter = 'all';
-window._modalMode = null;
-window._editId = null;
-window._activity = [];
+window._teams = []; window._matches = []; window._groups = []; window._grounds = [];
+window._settings = {}; window._matchFilter = 'all'; window._scorerFilter = 'all';
+window._modalMode = null; window._editId = null; window._activity = [];
 
-// ===== UTILS =====
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
-function teamName(id){ return window._teams.find(t=>t.id===id)?.name||id||'—'; }
-function teamColor(id){ return window._teams.find(t=>t.id===id)?.color||'#999'; }
-function fmtDt(ts){
-  if(!ts) return '—';
-  const d=ts.toDate?ts.toDate():new Date(ts);
-  return d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+// UTILS
+function toast(msg, type='ok'){
+  const t=document.getElementById('toast'); const m=document.getElementById('toastMsg');
+  t.style.background = type==='err'?'#c0392b':'#1a1a1a';
+  t.querySelector('i').className = type==='err'?'ti ti-alert-circle':'ti ti-check';
+  m.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);
 }
+window.toast = toast;
+function teamName(id){ return window._teams.find(t=>t.id===id)?.name||id||'?'; }
+function teamColor(id){ return window._teams.find(t=>t.id===id)?.color||'#999'; }
+function teamLogo(id){ const t=window._teams.find(x=>x.id===id); return t?.logoUrl?`<img src="${t.logoUrl}" class="team-logo" alt="${t.name}">`:`<div class="team-dot" style="background:${t?.color||'#999'}"></div>`; }
+function groupName(id){ return window._groups.find(g=>g.id===id)?.name||id||'—'; }
+function fmtDt(ts){ if(!ts)return'—'; const d=ts.toDate?ts.toDate():new Date(ts); return d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }
 function statusBadge(s){
-  const map={live:'<span class="badge badge-red">🔴 Live</span>',done:'<span class="badge badge-teal">✓ Terminé</span>',upcoming:'<span class="badge badge-amber">⏳ À venir</span>',planned:'<span class="badge badge-gray">📅 Planifié</span>'};
+  const map={live:'<span class="badge badge-red"><i class="ti ti-live-view"></i>Live</span>',done:'<span class="badge badge-teal"><i class="ti ti-check"></i>Terminé</span>',upcoming:'<span class="badge badge-amber"><i class="ti ti-clock"></i>À venir</span>',planned:'<span class="badge badge-gray"><i class="ti ti-calendar"></i>Planifié</span>'};
   return map[s]||map['planned'];
 }
-function logActivity(action){
-  window._activity.unshift({action, ts: new Date()});
-  window._activity = window._activity.slice(0,10);
-  renderDashActivity();
-}
+function calcPts(sA,sB){ if(sA>sB) return {A:2,B:0}; if(sB>sA) return {A:0,B:2}; return {A:1,B:1}; }
+function logActivity(action){ window._activity.unshift({action,ts:new Date()}); window._activity=window._activity.slice(0,12); renderDashActivity(); }
 
-// ===== DASHBOARD =====
+// DASHBOARD
 function renderDashboard(){
-  document.getElementById('statTeams').textContent = window._teams.length;
-  const done = window._matches.filter(m=>m.status==='done').length;
-  const live = window._matches.filter(m=>m.status==='live').length;
-  document.getElementById('statMatches').textContent = window._matches.length;
-  document.getElementById('statMatchesSub').textContent = `${done} joués · ${live} en cours`;
-  document.getElementById('statLive').textContent = live;
-  document.getElementById('statGrounds').textContent = window._grounds.length;
-
-  const upcoming = window._matches.filter(m=>m.status==='upcoming'||m.status==='planned').slice(0,4);
-  const up = document.getElementById('dashUpcoming');
-  if(!upcoming.length){ up.innerHTML='<div style="color:#bbb;font-size:13px;text-align:center;padding:12px">Aucun match à venir</div>'; return; }
-  up.innerHTML = upcoming.map(m=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid #f0f0f0">
-      <div>
-        <div style="font-size:13px;font-weight:500">${teamName(m.teamA)} <span style="color:#bbb">vs</span> ${teamName(m.teamB)}</div>
-        <div style="font-size:11px;color:#999">${fmtDt(m.scheduledAt)} · ${m.venue||'—'}</div>
-      </div>
-      ${statusBadge(m.status)}
-    </div>`).join('');
+  document.getElementById('statTeams').textContent=window._teams.length;
+  const done=window._matches.filter(m=>m.status==='done').length;
+  const live=window._matches.filter(m=>m.status==='live').length;
+  document.getElementById('statMatches').textContent=window._matches.length;
+  document.getElementById('statMatchesSub').textContent=`${done} joués · ${live} en cours`;
+  document.getElementById('statLive').textContent=live;
+  document.getElementById('statGrounds').textContent=window._grounds.length;
+  const upcoming=window._matches.filter(m=>m.status==='upcoming'||m.status==='planned').slice(0,5);
+  const up=document.getElementById('dashUpcoming');
+  up.innerHTML=upcoming.length?upcoming.map(m=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid #f0f0f0">
+    <div><div style="font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px">${teamLogo(m.teamA)}${teamName(m.teamA)} <span style="color:#bbb">vs</span> ${teamLogo(m.teamB)}${teamName(m.teamB)}</div>
+    <div style="font-size:11px;color:#999;margin-top:2px"><i class="ti ti-calendar" style="font-size:10px"></i> ${fmtDt(m.scheduledAt)} · ${m.venue||'—'}</div></div>${statusBadge(m.status)}</div>`).join('')
+    :'<div style="color:#bbb;font-size:13px;text-align:center;padding:12px"><i class="ti ti-calendar-off"></i> Aucun match à venir</div>';
 }
-
 function renderDashActivity(){
-  const el = document.getElementById('dashActivity');
-  if(!window._activity.length){ el.innerHTML='<li style="color:#bbb;font-size:13px">Aucune activité</li>'; return; }
-  el.innerHTML = window._activity.map((a,i)=>`
-    <li class="tl-item" style="${i===window._activity.length-1?'padding-bottom:0':''}">
-      <div class="tl-dot-wrap"><div class="tl-dot"></div>${i<window._activity.length-1?'<div class="tl-line"></div>':''}</div>
-      <div><div class="tl-text">${a.action}</div><div class="tl-meta">${a.ts.toLocaleTimeString('fr-FR')}</div></div>
-    </li>`).join('');
+  const el=document.getElementById('dashActivity');
+  if(!window._activity.length){el.innerHTML='<li style="color:#bbb;font-size:13px"><i class="ti ti-history"></i> Aucune activité</li>';return;}
+  el.innerHTML=window._activity.map((a,i)=>`<li class="tl-item" style="${i===window._activity.length-1?'padding-bottom:0':''}">
+    <div class="tl-dot-wrap"><div class="tl-dot"></div>${i<window._activity.length-1?'<div class="tl-line"></div>':''}</div>
+    <div><div class="tl-text">${a.action}</div><div class="tl-meta">${a.ts.toLocaleTimeString('fr-FR')}</div></div></li>`).join('');
 }
 
-// ===== TEAMS =====
+// TEAMS
 function renderTeams(){
-  const stats = {};
-  window._teams.forEach(t=>{ stats[t.id]={p:0,w:0,l:0}; });
+  const stats={};
+  window._teams.forEach(t=>{stats[t.id]={p:0,w:0,d:0,l:0,pts:0};});
   window._matches.filter(m=>m.status==='done').forEach(m=>{
-    const sA=parseInt(m.scoreA)||0, sB=parseInt(m.scoreB)||0;
-    if(stats[m.teamA]){ stats[m.teamA].p++; if(sA>sB) stats[m.teamA].w++; else stats[m.teamA].l++; }
-    if(stats[m.teamB]){ stats[m.teamB].p++; if(sB>sA) stats[m.teamB].w++; else stats[m.teamB].l++; }
+    const sA=parseInt(m.scoreA)||0,sB=parseInt(m.scoreB)||0;
+    const pts=calcPts(sA,sB);
+    if(stats[m.teamA]){stats[m.teamA].p++;stats[m.teamA].pts+=pts.A;if(pts.A===2)stats[m.teamA].w++;else if(pts.A===1)stats[m.teamA].d++;else stats[m.teamA].l++;}
+    if(stats[m.teamB]){stats[m.teamB].p++;stats[m.teamB].pts+=pts.B;if(pts.B===2)stats[m.teamB].w++;else if(pts.B===1)stats[m.teamB].d++;else stats[m.teamB].l++;}
   });
-  const html = window._teams.map(t=>`
-    <tr>
-      <td><div class="team-row"><div class="team-dot" style="background:${t.color||'#999'}"></div>${t.name}</div></td>
-      <td>${t.group||'—'}</td>
-      <td>${t.players||0}</td>
-      <td>${stats[t.id]?.p||0}</td>
-      <td>${stats[t.id]?.w||0} / ${stats[t.id]?.l||0}</td>
-      <td><span class="badge badge-green">Actif</span></td>
-      <td style="display:flex;gap:4px">
-        <button class="icon-btn" onclick="openEditTeam('${t.id}')"><i class="ti ti-edit"></i></button>
-        <button class="icon-btn btn-danger" onclick="deleteItem('teams','${t.id}','équipe')"><i class="ti ti-trash"></i></button>
-      </td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:#bbb;padding:20px">Aucune équipe</td></tr>';
-  document.getElementById('teamsTable').innerHTML = html;
+  document.getElementById('teamsTable').innerHTML=window._teams.map(t=>`<tr>
+    <td><div class="team-row">${t.logoUrl?`<img src="${t.logoUrl}" class="team-logo" alt="${t.name}">`:`<div class="team-dot" style="background:${t.color||'#999'}"></div>`}<strong>${t.name}</strong></div></td>
+    <td>${t.group?`<span class="badge badge-blue"><i class="ti ti-layers-difference"></i>${groupName(t.group)}</span>`:'<span style="color:#bbb">—</span>'}</td>
+    <td>${t.players||0}</td>
+    <td>${stats[t.id]?.p||0}</td>
+    <td><span style="color:#2e7d32;font-weight:600">${stats[t.id]?.w||0}</span> / <span style="color:#f57c00">${stats[t.id]?.d||0}</span> / <span style="color:#c0392b">${stats[t.id]?.l||0}</span></td>
+    <td><strong>${stats[t.id]?.pts||0}</strong></td>
+    <td><span class="badge badge-green"><i class="ti ti-circle-check"></i>Actif</span></td>
+    <td><div style="display:flex;gap:4px">
+      <button class="icon-btn success" onclick="openEditTeam('${t.id}')" title="Modifier"><i class="ti ti-edit"></i></button>
+      <button class="icon-btn danger" onclick="deleteItem('teams','${t.id}','équipe')" title="Supprimer"><i class="ti ti-trash"></i></button>
+    </div></td></tr>`).join('')||'<tr><td colspan="8" style="text-align:center;color:#bbb;padding:20px">Aucune équipe</td></tr>';
 }
 
-// ===== GROUPS =====
+// GROUPS
 function renderGroups(){
-  const el = document.getElementById('groupsGrid');
-  if(!window._groups.length){ el.innerHTML='<div style="color:#bbb;text-align:center;padding:40px">Aucun groupe. Créez-en un !</div>'; return; }
-  el.innerHTML = window._groups.map(g=>{
-    const gTeams = window._teams.filter(t=>t.group===g.id);
-    const stats = {};
-    gTeams.forEach(t=>{ stats[t.id]={name:t.name,color:t.color||'#999',p:0,w:0,l:0,pts:0}; });
+  const el=document.getElementById('groupsGrid');
+  if(!window._groups.length){el.innerHTML='<div style="color:#bbb;text-align:center;padding:40px"><i class="ti ti-layers-off" style="font-size:32px;display:block;margin-bottom:8px"></i>Aucun groupe</div>';return;}
+  el.innerHTML=window._groups.map(g=>{
+    const gTeams=window._teams.filter(t=>t.group===g.id);
+    const stats={};
+    gTeams.forEach(t=>{stats[t.id]={name:t.name,color:t.color||'#999',logoUrl:t.logoUrl||null,p:0,w:0,d:0,l:0,pts:0,pf:0,pa:0};});
     window._matches.filter(m=>m.group===g.id&&m.status==='done').forEach(m=>{
-      const sA=parseInt(m.scoreA)||0,sB=parseInt(m.scoreB)||0;
-      if(stats[m.teamA]){ stats[m.teamA].p++;if(sA>sB){stats[m.teamA].w++;stats[m.teamA].pts+=2;}else{stats[m.teamA].l++;stats[m.teamA].pts+=1;} }
-      if(stats[m.teamB]){ stats[m.teamB].p++;if(sB>sA){stats[m.teamB].w++;stats[m.teamB].pts+=2;}else{stats[m.teamB].l++;stats[m.teamB].pts+=1;} }
+      const sA=parseInt(m.scoreA)||0,sB=parseInt(m.scoreB)||0; const pts=calcPts(sA,sB);
+      if(stats[m.teamA]){stats[m.teamA].p++;stats[m.teamA].pf+=sA;stats[m.teamA].pa+=sB;stats[m.teamA].pts+=pts.A;if(pts.A===2)stats[m.teamA].w++;else if(pts.A===1)stats[m.teamA].d++;else stats[m.teamA].l++;}
+      if(stats[m.teamB]){stats[m.teamB].p++;stats[m.teamB].pf+=sB;stats[m.teamB].pa+=sA;stats[m.teamB].pts+=pts.B;if(pts.B===2)stats[m.teamB].w++;else if(pts.B===1)stats[m.teamB].d++;else stats[m.teamB].l++;}
     });
-    const rows = Object.values(stats).sort((a,b)=>b.pts-a.pts);
-    return `<div class="card"><div class="card-head"><h3>Groupe ${g.name||g.id}</h3>
+    const rows=Object.values(stats).sort((a,b)=>b.pts-a.pts||(b.pf-b.pa)-(a.pf-a.pa));
+    return `<div class="card"><div class="card-head"><h3><i class="ti ti-layers-difference" style="color:#185FA5"></i> Groupe ${g.name||g.id}</h3>
       <div style="display:flex;gap:6px">
-        <button class="icon-btn" onclick="openEditGroup('${g.id}')"><i class="ti ti-edit"></i></button>
-        <button class="icon-btn" onclick="deleteItem('groups','${g.id}','groupe')"><i class="ti ti-trash"></i></button>
+        <button class="icon-btn success" onclick="openEditGroup('${g.id}')" title="Modifier"><i class="ti ti-edit"></i></button>
+        <button class="icon-btn danger" onclick="deleteItem('groups','${g.id}','groupe')" title="Supprimer"><i class="ti ti-trash"></i></button>
       </div></div>
-      <table><thead><tr><th>#</th><th>Équipe</th><th>J</th><th>V</th><th>D</th><th>Pts</th></tr></thead>
-      <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td><div class="team-row"><div class="team-dot" style="background:${r.color}"></div>${r.name}</div></td><td>${r.p}</td><td>${r.w}</td><td>${r.l}</td><td style="font-weight:700">${r.pts}</td></tr>`).join('')||'<tr><td colspan="6" style="color:#bbb;text-align:center">Aucune équipe dans ce groupe</td></tr>'}</tbody>
+      <table><thead><tr><th>#</th><th>Équipe</th><th>J</th><th>V</th><th>N</th><th>D</th><th>Pts</th><th>+/-</th></tr></thead>
+      <tbody>${rows.map((r,i)=>{const diff=r.pf-r.pa;return`<tr>
+        <td style="font-weight:700;color:${i===0?'#185FA5':'#999'}">${i+1}</td>
+        <td><div class="team-row">${r.logoUrl?`<img src="${r.logoUrl}" class="team-logo" alt="${r.name}">`:`<div class="team-dot" style="background:${r.color}"></div>`}<span style="${i<2?'font-weight:600':''}">${r.name}</span></div></td>
+        <td>${r.p}</td><td style="color:#2e7d32;font-weight:600">${r.w}</td><td style="color:#f57c00">${r.d}</td><td style="color:#c0392b">${r.l}</td>
+        <td style="font-weight:700;color:${i===0?'#185FA5':'inherit'}">${r.pts}</td>
+        <td style="color:${diff>0?'#2e7d32':diff<0?'#c0392b':'#999'}">${diff>0?'+':''}${diff}</td>
+      </tr>`;}).join('')||'<tr><td colspan="8" style="color:#bbb;text-align:center;padding:12px">Aucune équipe dans ce groupe</td></tr>'}</tbody>
       </table></div>`;
   }).join('');
 }
 
-// ===== GROUNDS =====
+// GROUNDS
 function renderGrounds(){
-  const el = document.getElementById('groundsList');
-  if(!window._grounds.length){ el.innerHTML='<div style="color:#bbb;text-align:center;padding:40px">Aucun terrain</div>'; return; }
-  el.innerHTML = window._grounds.map(g=>{
-    const active = window._matches.some(m=>m.venue===g.name&&m.status==='live');
+  const el=document.getElementById('groundsList');
+  if(!window._grounds.length){el.innerHTML='<div style="color:#bbb;text-align:center;padding:40px"><i class="ti ti-map-pin-off" style="font-size:32px;display:block;margin-bottom:8px"></i>Aucun terrain</div>';return;}
+  el.innerHTML=window._grounds.map(g=>{
+    const active=window._matches.some(m=>m.venue===g.name&&m.status==='live');
     return `<div style="background:white;border:0.5px solid #ddd;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:10px">
-      <div style="width:36px;height:36px;background:#e0f7f0;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-map-pin" style="color:#00695c;font-size:18px"></i></div>
-      <div><div style="font-size:13px;font-weight:600">${g.name}</div><div style="font-size:12px;color:#999">${g.capacity?'Capacité '+g.capacity+' ·':''} ${g.location||''}</div></div>
+      <div style="width:38px;height:38px;background:${active?'#fde8e8':'#e0f7f0'};border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="ti ti-map-pin" style="color:${active?'#c0392b':'#00695c'};font-size:18px"></i></div>
+      <div><div style="font-size:13px;font-weight:600">${g.name}</div><div style="font-size:12px;color:#999;display:flex;gap:8px;margin-top:2px">${g.capacity?`<span><i class="ti ti-users" style="font-size:10px"></i> ${g.capacity}</span>`:''} ${g.location?`<span><i class="ti ti-location" style="font-size:10px"></i> ${g.location}</span>`:''}</div></div>
       <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        ${active?'<span class="badge badge-red">Match en cours</span>':'<span class="badge badge-green">Disponible</span>'}
-        <button class="icon-btn" onclick="openEditGround('${g.id}')"><i class="ti ti-edit"></i></button>
-        <button class="icon-btn" onclick="deleteItem('grounds','${g.id}','terrain')"><i class="ti ti-trash"></i></button>
+        ${active?'<span class="badge badge-red"><i class="ti ti-live-view"></i>Match en cours</span>':'<span class="badge badge-green"><i class="ti ti-check"></i>Disponible</span>'}
+        <button class="icon-btn success" onclick="openEditGround('${g.id}')" title="Modifier"><i class="ti ti-edit"></i></button>
+        <button class="icon-btn danger" onclick="deleteItem('grounds','${g.id}','terrain')" title="Supprimer"><i class="ti ti-trash"></i></button>
+      </div></div>`;
+  }).join('');
+}
+
+// MATCHES
+function renderMatches(){
+  const f=window._matchFilter;
+  const list=f==='all'?window._matches:window._matches.filter(m=>m.status===f);
+  document.getElementById('matchesTable').innerHTML=list.map(m=>{
+    const isDone=m.status==='done';const isLive=m.status==='live';
+    const scoreStr=(isDone||isLive)?`<strong style="font-size:15px;font-variant-numeric:tabular-nums">${m.scoreA||0} – ${m.scoreB||0}</strong>`:'<span style="color:#bbb">—</span>';
+    const grpLabel=m.group?`<span class="badge badge-blue" style="font-size:10px"><i class="ti ti-layers-difference"></i>${groupName(m.group)}</span>`:m.round?`<span class="badge badge-purple" style="font-size:10px"><i class="ti ti-tournament"></i>${m.round}</span>`:'<span style="color:#bbb">—</span>';
+    return `<tr>
+      <td style="font-size:11px;color:#bbb;font-family:monospace">#${m.id.slice(-4).toUpperCase()}</td>
+      <td><div class="team-row">${teamLogo(m.teamA)}<span style="font-size:13px">${teamName(m.teamA)}</span></div></td>
+      <td style="text-align:center">${scoreStr}</td>
+      <td><div class="team-row">${teamLogo(m.teamB)}<span style="font-size:13px">${teamName(m.teamB)}</span></div></td>
+      <td style="font-size:12px;color:#666">${m.venue||'—'}</td>
+      <td style="font-size:12px;color:#666">${fmtDt(m.scheduledAt)}</td>
+      <td>${grpLabel}</td>
+      <td>${statusBadge(m.status)}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="icon-btn success" onclick="openEditMatch('${m.id}')" title="Modifier"><i class="ti ti-edit"></i></button>
+        <button class="icon-btn danger" onclick="deleteItem('matches','${m.id}','match')" title="Supprimer"><i class="ti ti-trash"></i></button>
+      </div></td></tr>`;
+  }).join('')||'<tr><td colspan="9" style="text-align:center;color:#bbb;padding:20px">Aucun match</td></tr>';
+}
+window.filterMatches=function(f,el){window._matchFilter=f;document.querySelectorAll('#matchPhaseStrip .phase-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderMatches();};
+
+// SCORER PAGE
+function renderScorer(){
+  const f=window._scorerFilter;
+  const list=f==='all'?window._matches:window._matches.filter(m=>m.status===f);
+  const el=document.getElementById('scorerGrid');
+  if(!list.length){el.innerHTML='<div style="color:#bbb;text-align:center;padding:40px"><i class="ti ti-pencil-off" style="font-size:32px;display:block;margin-bottom:8px"></i>Aucun match disponible</div>';return;}
+  el.innerHTML=list.map(m=>{
+    const isDone=m.status==='done';const isLive=m.status==='live';
+    const sA=m.scoreA||0;const sB=m.scoreB||0;
+    const pts=isDone?calcPts(sA,sB):{A:null,B:null};
+    const grpLabel=m.group?`Groupe ${groupName(m.group)}`:m.round||'';
+    return `<div class="scorer-card">
+      <div class="scorer-head">
+        <div>
+          <div style="font-size:12px;opacity:.7;margin-bottom:3px">${grpLabel} ${m.venue?'· '+m.venue:''}</div>
+          <div style="font-size:13px;font-weight:600">${fmtDt(m.scheduledAt)}</div>
+        </div>
+        ${statusBadge(m.status)}
+      </div>
+      <div class="scorer-body">
+        <div class="score-input-row">
+          <div style="flex:1"><div class="team-row" style="margin-bottom:6px">${teamLogo(m.teamA)}<strong style="font-size:13px">${teamName(m.teamA)}</strong></div>
+            ${pts.A!==null?`<span class="pts-badge ${pts.A===2?'pts-win':pts.A===1?'pts-draw':'pts-loss'}">${pts.A===2?'🏆 2pts':pts.A===1?'🤝 1pt':'❌ 0pt'}</span>`:''}
+          </div>
+          <input class="score-input-num" id="sA-${m.id}" type="number" min="0" value="${sA}" onchange="quickScore('${m.id}','scoreA',this.value)">
+          <div class="score-divider">–</div>
+          <input class="score-input-num" id="sB-${m.id}" type="number" min="0" value="${sB}" onchange="quickScore('${m.id}','scoreB',this.value)">
+          <div style="flex:1;text-align:right"><div class="team-row" style="margin-bottom:6px;justify-content:flex-end">${teamLogo(m.teamB)}<strong style="font-size:13px">${teamName(m.teamB)}</strong></div>
+            ${pts.B!==null?`<span class="pts-badge ${pts.B===2?'pts-win':pts.B===1?'pts-draw':'pts-loss'}" style="float:right">${pts.B===2?'🏆 2pts':pts.B===1?'🤝 1pt':'❌ 0pt'}</span>`:''}
+          </div>
+        </div>
+        <div class="action-bar">
+          ${m.status!=='live'?`<button class="btn btn-primary btn-sm" onclick="setMatchStatus('${m.id}','live')"><i class="ti ti-live-view"></i>Démarrer</button>`:''}
+          ${m.status==='live'?`<button class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7" onclick="setMatchStatus('${m.id}','done')"><i class="ti ti-flag-3"></i>Terminer</button>`:''}
+          ${m.status==='done'?`<button class="btn btn-sm" style="background:#fff3e0;color:#f57c00;border-color:#ffcc80" onclick="setMatchStatus('${m.id}','live')"><i class="ti ti-refresh"></i>Reprendre</button>`:''}
+          <button class="btn btn-sm btn-danger" onclick="setMatchStatus('${m.id}','planned')"><i class="ti ti-clock"></i>Reset</button>
+          <button class="btn btn-sm" onclick="saveScore('${m.id}')"><i class="ti ti-device-floppy"></i>Sauvegarder</button>
+        </div>
       </div>
     </div>`;
   }).join('');
 }
-
-// ===== MATCHES =====
-function renderMatches(){
-  const f = window._matchFilter;
-  const list = f==='all' ? window._matches : window._matches.filter(m=>m.status===f);
-  const html = list.map(m=>`
-    <tr>
-      <td style="font-size:11px;color:#999">#${m.id.slice(-4).toUpperCase()}</td>
-      <td><div class="team-row"><div class="team-dot" style="background:${teamColor(m.teamA)}"></div>${teamName(m.teamA)}</div></td>
-      <td><div class="team-row"><div class="team-dot" style="background:${teamColor(m.teamB)}"></div>${teamName(m.teamB)}</div></td>
-      <td>${m.venue||'—'}</td>
-      <td style="font-size:12px">${fmtDt(m.scheduledAt)}</td>
-      <td style="font-size:12px">${m.group?'Gr. '+m.group:''}${m.round?m.round:''}</td>
-      <td>${statusBadge(m.status)}</td>
-      <td style="display:flex;gap:4px">
-        <button class="icon-btn" onclick="openEditMatch('${m.id}')"><i class="ti ti-edit"></i></button>
-        <button class="icon-btn" onclick="deleteItem('matches','${m.id}','match')"><i class="ti ti-trash"></i></button>
-      </td>
-    </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;color:#bbb;padding:20px">Aucun match</td></tr>`;
-  document.getElementById('matchesTable').innerHTML = html;
-}
-window.filterMatches = function(f, el){
-  window._matchFilter = f;
-  document.querySelectorAll('.phase-chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  renderMatches();
+window.filterScorer=function(f,el){window._scorerFilter=f;document.querySelectorAll('#scorerFilter .phase-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderScorer();};
+window.quickScore=async function(id,field,val){
+  const v=Math.max(0,parseInt(val)||0);
+  document.getElementById((field==='scoreA'?'sA':'sB')+'-'+id).value=v;
+};
+window.saveScore=async function(id){
+  const sA=Math.max(0,parseInt(document.getElementById('sA-'+id)?.value)||0);
+  const sB=Math.max(0,parseInt(document.getElementById('sB-'+id)?.value)||0);
+  await updateDoc(doc(db,'matches',id),{scoreA:sA,scoreB:sB,updatedAt:serverTimestamp()});
+  const m=window._matches.find(x=>x.id===id);
+  logActivity(`Score sauvegardé : ${teamName(m?.teamA)} ${sA}–${sB} ${teamName(m?.teamB)}`);
+  toast('Score sauvegardé ✓');
 };
 
-// ===== LIVE SCORES =====
+// LIVE
 function renderLive(){
-  const el = document.getElementById('liveGrid');
-  const active = window._matches.filter(m=>m.status!=='done');
-  if(!active.length){ el.innerHTML='<div style="color:#bbb;font-size:13px">Aucun match actif</div>'; return; }
-  el.innerHTML = active.map(m=>`
-    <div class="live-card ${m.status==='live'?'is-live':''}">
-      <div class="live-card-head">
-        <span style="font-size:12px;color:#999">${m.venue||'—'} ${m.group?'· Gr.'+m.group:''}</span>
-        ${statusBadge(m.status)}
-      </div>
-      <div class="live-card-body">
-        <div class="score-control">
-          <div class="score-team-name"><div class="team-dot" style="background:${teamColor(m.teamA)}"></div>${teamName(m.teamA)}</div>
-          <div class="score-display">
-            <button class="score-btn" onclick="adjustScore('${m.id}','scoreA',-1)">−</button>
-            <div class="score-big" id="scoreA-${m.id}">${m.scoreA||0}</div>
-            <button class="score-btn plus" onclick="adjustScore('${m.id}','scoreA',1)">+</button>
-          </div>
+  const el=document.getElementById('liveGrid');
+  const active=window._matches.filter(m=>m.status!=='done');
+  if(!active.length){el.innerHTML='<div style="color:#bbb;font-size:13px;text-align:center;padding:40px"><i class="ti ti-live-photo" style="font-size:32px;display:block;margin-bottom:8px"></i>Aucun match actif</div>';return;}
+  el.innerHTML=active.map(m=>`<div class="live-card ${m.status==='live'?'is-live':''}">
+    <div class="live-card-head">
+      <div class="info-row"><i class="ti ti-map-pin"></i>${m.venue||'—'} ${m.group?'<i class="ti ti-point"></i> Gr.'+groupName(m.group):''}</div>
+      ${statusBadge(m.status)}
+    </div>
+    <div class="live-card-body">
+      <div class="score-control">
+        <div class="score-team-name">${teamLogo(m.teamA)} ${teamName(m.teamA)}</div>
+        <div class="score-display">
+          <button class="score-btn" onclick="adjustScore('${m.id}','scoreA',-1)">−</button>
+          <div class="score-big">${m.scoreA||0}</div>
+          <button class="score-btn plus" onclick="adjustScore('${m.id}','scoreA',1)">+</button>
         </div>
-        <div style="text-align:center;font-size:11px;color:#bbb;padding:2px 0">vs</div>
-        <div class="score-control">
-          <div class="score-team-name"><div class="team-dot" style="background:${teamColor(m.teamB)}"></div>${teamName(m.teamB)}</div>
-          <div class="score-display">
-            <button class="score-btn" onclick="adjustScore('${m.id}','scoreB',-1)">−</button>
-            <div class="score-big" id="scoreB-${m.id}">${m.scoreB||0}</div>
-            <button class="score-btn plus" onclick="adjustScore('${m.id}','scoreB',1)">+</button>
-          </div>
+      </div>
+      <div style="text-align:center;font-size:11px;color:#bbb;padding:2px 0">VS</div>
+      <div class="score-control">
+        <div class="score-team-name">${teamLogo(m.teamB)} ${teamName(m.teamB)}</div>
+        <div class="score-display">
+          <button class="score-btn" onclick="adjustScore('${m.id}','scoreB',-1)">−</button>
+          <div class="score-big">${m.scoreB||0}</div>
+          <button class="score-btn plus" onclick="adjustScore('${m.id}','scoreB',1)">+</button>
         </div>
-        ${m.status==='live'?`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:12px;color:#999;border-top:0.5px solid #f0f0f0;margin-top:8px">
-          <span>Période <strong>${m.period||1}/${m.maxPeriods||4}</strong></span>
-          <div style="display:flex;gap:4px">
-            <button class="btn btn-sm" onclick="adjustPeriod('${m.id}',-1)">−</button>
-            <button class="btn btn-sm" onclick="adjustPeriod('${m.id}',1)">+</button>
-          </div>
-        </div>`:''}
       </div>
-      <div class="live-card-foot">
-        ${m.status!=='live'?`<button class="btn btn-sm btn-primary" onclick="setMatchStatus('${m.id}','live')"><i class="ti ti-live-view"></i>Démarrer</button>`:''}
-        ${m.status==='live'?`<button class="btn btn-sm btn-danger" onclick="setMatchStatus('${m.id}','done')"><i class="ti ti-flag"></i>Terminer</button>`:''}
-        ${m.status==='done'?'<span class="badge badge-teal">Match terminé</span>':''}
-        ${m.status!=='done'?`<button class="btn btn-sm" onclick="setMatchStatus('${m.id}','planned')"><i class="ti ti-clock"></i>Reset</button>`:''}
-      </div>
-    </div>`).join('');
+      ${m.status==='live'?`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:12px;color:#999;border-top:0.5px solid #f0f0f0;margin-top:8px">
+        <span><i class="ti ti-clock"></i> Période <strong>${m.period||1}/${m.maxPeriods||4}</strong></span>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-sm" onclick="adjustPeriod('${m.id}',-1)">−</button>
+          <button class="btn btn-sm" onclick="adjustPeriod('${m.id}',1)">+</button>
+        </div></div>`:''}
+    </div>
+    <div class="live-card-foot">
+      ${m.status!=='live'?`<button class="btn btn-sm btn-primary" onclick="setMatchStatus('${m.id}','live')"><i class="ti ti-player-play"></i>Démarrer</button>`:''}
+      ${m.status==='live'?`<button class="btn btn-sm btn-danger" onclick="setMatchStatus('${m.id}','done')"><i class="ti ti-flag-3"></i>Terminer</button>`:''}
+      <button class="btn btn-sm" onclick="setMatchStatus('${m.id}','planned')"><i class="ti ti-rotate-clockwise-2"></i>Reset</button>
+    </div>
+  </div>`).join('');
 }
 
-window.adjustScore = async function(id, field, delta){
-  const m = window._matches.find(x=>x.id===id);
-  if(!m) return;
-  const val = Math.max(0,(parseInt(m[field])||0)+delta);
+window.adjustScore=async function(id,field,delta){
+  const m=window._matches.find(x=>x.id===id);if(!m)return;
+  const val=Math.max(0,(parseInt(m[field])||0)+delta);
   await updateDoc(doc(db,'matches',id),{[field]:val});
-  logActivity(`Score mis à jour : ${teamName(m.teamA)} vs ${teamName(m.teamB)} → ${field==='scoreA'?val:m.scoreA||0} – ${field==='scoreB'?val:m.scoreB||0}`);
+  logActivity(`Score : ${teamName(m.teamA)} ${field==='scoreA'?val:m.scoreA||0}–${field==='scoreB'?val:m.scoreB||0} ${teamName(m.teamB)}`);
 };
-window.adjustPeriod = async function(id, delta){
-  const m = window._matches.find(x=>x.id===id);
-  if(!m) return;
-  const val = Math.max(1, Math.min(m.maxPeriods||4, (parseInt(m.period)||1)+delta));
+window.adjustPeriod=async function(id,delta){
+  const m=window._matches.find(x=>x.id===id);if(!m)return;
+  const val=Math.max(1,Math.min(m.maxPeriods||4,(parseInt(m.period)||1)+delta));
   await updateDoc(doc(db,'matches',id),{period:val});
 };
-window.setMatchStatus = async function(id, status){
-  await updateDoc(doc(db,'matches',id),{status, updatedAt: serverTimestamp()});
-  const m = window._matches.find(x=>x.id===id);
+window.setMatchStatus=async function(id,status){
+  await updateDoc(doc(db,'matches',id),{status,updatedAt:serverTimestamp()});
+  const m=window._matches.find(x=>x.id===id);
   logActivity(`Match ${status==='live'?'démarré':status==='done'?'terminé':'reset'} : ${teamName(m?.teamA)} vs ${teamName(m?.teamB)}`);
-  toast(status==='live'?'Match démarré !':status==='done'?'Match terminé !':'Match réinitialisé');
+  toast(status==='live'?'Match démarré !':status==='done'?'Match terminé !':'Réinitialisé');
 };
 
-// ===== BRACKET ADMIN =====
+// BRACKET
 function renderBracketAdmin(){
-  const el = document.getElementById('bracketAdmin');
-  const groupPhase = window._matches.filter(m=>m.group);
-  const knockout = window._matches.filter(m=>m.round);
-  
-  let html = `<div class="card"><div class="card-head"><h3>Phase de groupes</h3><span class="badge badge-blue">${groupPhase.filter(m=>m.status==='done').length}/${groupPhase.length} matchs joués</span></div>
-    <div class="card-body">`;
-  
+  const el=document.getElementById('bracketAdmin');
+  const groupPhase=window._matches.filter(m=>m.group);
+  const knockout=window._matches.filter(m=>m.round);
+  let html=`<div class="card"><div class="card-head"><h3><i class="ti ti-layers-difference" style="color:#185FA5"></i> Phase de groupes</h3><span class="badge badge-blue">${groupPhase.filter(m=>m.status==='done').length}/${groupPhase.length} matchs joués</span></div><div class="card-body">`;
   window._groups.forEach(g=>{
-    const gTeams = window._teams.filter(t=>t.group===g.id);
-    const stats = {};
-    gTeams.forEach(t=>{stats[t.id]={name:t.name,color:t.color||'#999',pts:0,p:0,w:0}});
+    const gTeams=window._teams.filter(t=>t.group===g.id);
+    const stats={};gTeams.forEach(t=>{stats[t.id]={name:t.name,color:t.color||'#999',pts:0,p:0,w:0,d:0};});
     window._matches.filter(m=>m.group===g.id&&m.status==='done').forEach(m=>{
-      const sA=parseInt(m.scoreA)||0,sB=parseInt(m.scoreB)||0;
-      if(stats[m.teamA]){stats[m.teamA].p++;if(sA>sB){stats[m.teamA].w++;stats[m.teamA].pts+=2;}else stats[m.teamA].pts+=1;}
-      if(stats[m.teamB]){stats[m.teamB].p++;if(sB>sA){stats[m.teamB].w++;stats[m.teamB].pts+=2;}else stats[m.teamB].pts+=1;}
+      const sA=parseInt(m.scoreA)||0,sB=parseInt(m.scoreB)||0;const pts=calcPts(sA,sB);
+      if(stats[m.teamA]){stats[m.teamA].p++;stats[m.teamA].pts+=pts.A;if(pts.A===2)stats[m.teamA].w++;else if(pts.A===1)stats[m.teamA].d++;}
+      if(stats[m.teamB]){stats[m.teamB].p++;stats[m.teamB].pts+=pts.B;if(pts.B===2)stats[m.teamB].w++;else if(pts.B===1)stats[m.teamB].d++;}
     });
-    const sorted = Object.values(stats).sort((a,b)=>b.pts-a.pts);
-    html += `<div style="margin-bottom:16px"><strong style="font-size:12px">Groupe ${g.name||g.id}</strong>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">${sorted.map((t,i)=>
-        `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;border:1px solid ${i===0?'#185FA5':'#ddd'};font-size:12px;${i===0?'background:#e3f0fd;color:#185FA5;font-weight:700':'color:#666'}">
-          <span class="team-dot" style="background:${t.color}"></span>${i+1}. ${t.name} (${t.pts}pts)
-        </span>`).join('')}
-      </div></div>`;
+    const sorted=Object.values(stats).sort((a,b)=>b.pts-a.pts);
+    html+=`<div style="margin-bottom:16px"><strong style="font-size:12px;color:#555">Groupe ${g.name||g.id}</strong>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">${sorted.map((t,i)=>`<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;border:1px solid ${i===0?'#185FA5':'#ddd'};font-size:12px;${i===0?'background:#e3f0fd;color:#185FA5;font-weight:700':'color:#666'}">
+        <div class="team-dot" style="background:${t.color}"></div>${i+1}. ${t.name} (${t.pts}pts)</span>`).join('')}</div></div>`;
   });
-  
-  html += `</div></div>`;
-  
+  html+=`</div></div>`;
   if(knockout.length){
-    const phases = [...new Set(knockout.map(m=>m.round))];
-    html += `<div class="card"><div class="card-head"><h3>Phase finale</h3></div><div class="card-body">`;
+    const phases=[...new Set(knockout.map(m=>m.round))];
+    html+=`<div class="card"><div class="card-head"><h3><i class="ti ti-tournament" style="color:#185FA5"></i> Phase finale</h3></div><div class="card-body">`;
     phases.forEach(ph=>{
-      html += `<div style="margin-bottom:16px"><strong style="font-size:12px;color:#999;text-transform:uppercase;letter-spacing:.06em">${ph}</strong>`;
+      html+=`<div style="margin-bottom:16px"><strong style="font-size:12px;color:#999;text-transform:uppercase;letter-spacing:.06em">${ph}</strong>`;
       knockout.filter(m=>m.round===ph).forEach(m=>{
-        const isDone=m.status==='done'; const isLive=m.status==='live';
-        html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid #f0f0f0">
-          <div style="flex:1;font-size:13px;font-weight:500">${teamName(m.teamA)||'À déterminer'} <span style="color:#bbb">vs</span> ${teamName(m.teamB)||'À déterminer'}</div>
-          ${isDone||isLive?`<span style="font-size:15px;font-weight:700">${m.scoreA||0} – ${m.scoreB||0}</span>`:''}
+        const isDone=m.status==='done';const isLive=m.status==='live';
+        html+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid #f0f0f0">
+          <div style="flex:1;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px">${teamLogo(m.teamA)}${teamName(m.teamA)||'À déterminer'} <span style="color:#bbb">vs</span> ${teamLogo(m.teamB)}${teamName(m.teamB)||'À déterminer'}</div>
+          ${isDone||isLive?`<span style="font-size:16px;font-weight:700">${m.scoreA||0}–${m.scoreB||0}</span>`:''}
           ${statusBadge(m.status)}
-          <button class="icon-btn" onclick="openEditMatch('${m.id}')"><i class="ti ti-edit"></i></button>
+          <button class="icon-btn success" onclick="openEditMatch('${m.id}')" title="Modifier"><i class="ti ti-edit"></i></button>
         </div>`;
-      });
-      html += '</div>';
-    });
-    html += '</div></div>';
-  } else {
-    html += `<div class="card"><div class="card-body" style="text-align:center;color:#bbb;padding:24px">
-      <i class="ti ti-tournament" style="font-size:28px;display:block;margin-bottom:8px"></i>
-      Ajoutez des matchs de phase finale en les créant avec un champ "Ronde" (ex: Quarts de finale)
-    </div></div>`;
+      });html+=`</div>`;
+    });html+=`</div></div>`;
   }
-  
-  el.innerHTML = html;
+  el.innerHTML=html;
 }
 
-// ===== SETTINGS =====
-window.saveSettings = async function(){
-  const name = document.getElementById('settingName').value.trim();
-  const subtitle = document.getElementById('settingSubtitle').value.trim();
-  const pwd = document.getElementById('settingPassword').value;
-  const data = {name,subtitle};
-  if(pwd) data.password = pwd;
-  await setDoc(doc(db,'settings','tournament'), data, {merge:true});
-  toast('Paramètres enregistrés !');
-  logActivity('Paramètres du tournoi mis à jour');
+// SETTINGS
+window.saveSettings=async function(){
+  const name=document.getElementById('settingName').value.trim();
+  const subtitle=document.getElementById('settingSubtitle').value.trim();
+  const pwd=document.getElementById('settingPassword').value;
+  const data={name,subtitle};if(pwd)data.password=pwd;
+  await setDoc(doc(db,'settings','tournament'),data,{merge:true});
+  toast('Paramètres enregistrés !');logActivity('Paramètres mis à jour');
 };
 
-// ===== MODAL SYSTEM =====
-window._modalMode = null; window._editId = null;
-
-window.openModal = function(type){
-  window._modalMode = type; window._editId = null;
-  const titles = {team:'Ajouter une équipe',group:'Ajouter un groupe',ground:'Ajouter un terrain',match:'Ajouter un match'};
-  document.getElementById('modalTitle').textContent = titles[type]||'Ajouter';
-  document.getElementById('modalBody').innerHTML = getModalForm(type, null);
+// MODAL SYSTEM
+window.openModal=function(type){
+  window._modalMode=type;window._editId=null;
+  const cfg={team:{title:'Nouvelle équipe',icon:'👥',bg:'#e3f0fd',color:'#1565c0'},group:{title:'Nouveau groupe',icon:'📋',bg:'#f3e5f5',color:'#7b1fa2'},ground:{title:'Nouveau terrain',icon:'📍',bg:'#e0f7f0',color:'#00695c'},match:{title:'Nouveau match',icon:'🏀',bg:'#fef3e2',color:'#b7620c'}};
+  const c=cfg[type]||{title:'Ajouter',icon:'➕',bg:'#f0f0f0',color:'#666'};
+  document.getElementById('modalIcon').textContent=c.icon;document.getElementById('modalIcon').style.cssText=`background:${c.bg};color:${c.color}`;
+  document.getElementById('modalTitle').childNodes[1]&&(document.getElementById('modalTitle').childNodes[1].textContent=' '+c.title);
+  document.getElementById('modalTitle').innerHTML=`<span class="modal-icon" style="background:${c.bg};color:${c.color}">${c.icon}</span> ${c.title}`;
+  document.getElementById('modalBody').innerHTML=getModalForm(type,null);
   document.getElementById('modal').classList.add('show');
 };
+window.closeModal=function(){document.getElementById('modal').classList.remove('show');};
 
-function getModalForm(type, data){
+function buildTeamOptions(selectedId=''){
+  const opts=window._teams.map(t=>`<option value="${t.id}" ${selectedId===t.id?'selected':''}>${t.name}</option>`).join('');
+  // Placeholder options for qualified teams
+  const placeholders=window._groups.map(g=>`<optgroup label="--- Qualifiés Groupe ${g.name||g.id} ---">
+    <option value="1er-${g.id}">1er Groupe ${g.name||g.id}</option>
+    <option value="2e-${g.id}">2e Groupe ${g.name||g.id}</option>
+    <option value="meilleur2-${g.id}">Meilleur 2e Groupe ${g.name||g.id}</option>
+  </optgroup>`).join('');
+  return `<option value="">Choisir...</option>${opts}${placeholders}`;
+}
+
+function getModalForm(type,data){
   if(type==='team') return `
-    <div class="form-row"><label class="form-label">Nom de l'équipe *</label><input class="form-input" id="fName" value="${data?.name||''}" placeholder="ex: Dragons Bleus"></div>
+    <div class="form-row">
+      <label class="form-label"><i class="ti ti-photo"></i> Logo / Image de l'équipe</label>
+      <div class="logo-upload-area ${data?.logoUrl?'has-logo':''}" id="logoDropZone">
+        <input type="file" class="logo-upload-input" id="fLogo" accept="image/*" onchange="previewLogo(this)">
+        ${data?.logoUrl?`<img src="${data.logoUrl}" class="logo-preview" id="logoPreviewImg" alt="Logo">`:`<div class="logo-placeholder" id="logoPreviewImg">🏀</div>`}
+        <div class="logo-upload-text" id="logoUploadText">${data?.logoUrl?'✓ Logo chargé — clique pour changer':'Clique ou glisse une image ici<br><span style="font-size:11px">PNG, JPG, SVG · Max 2 Mo</span>'}</div>
+        <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
+      </div>
+      <input type="hidden" id="fLogoUrl" value="${data?.logoUrl||''}">
+    </div>
+    <div class="form-row"><label class="form-label"><i class="ti ti-users"></i> Nom de l'équipe *</label><input class="form-input" id="fName" value="${data?.name||''}" placeholder="ex: Dragons Bleus"></div>
     <div class="form-grid">
-      <div class="form-row"><label class="form-label">Groupe</label>
+      <div class="form-row"><label class="form-label"><i class="ti ti-layers-difference"></i> Groupe</label>
         <select class="form-input" id="fGroup">
           <option value="">— Aucun —</option>
           ${window._groups.map(g=>`<option value="${g.id}" ${data?.group===g.id?'selected':''}>${g.name||g.id}</option>`).join('')}
         </select>
       </div>
-      <div class="form-row"><label class="form-label">Couleur</label><input class="form-input" id="fColor" type="color" value="${data?.color||'#185FA5'}"></div>
+      <div class="form-row"><label class="form-label"><i class="ti ti-palette"></i> Couleur</label><input class="form-input" id="fColor" type="color" value="${data?.color||'#185FA5'}"></div>
     </div>
-    <div class="form-row"><label class="form-label">Nombre de joueurs</label><input class="form-input" id="fPlayers" type="number" value="${data?.players||''}" placeholder="12"></div>`;
+    <div class="form-row"><label class="form-label"><i class="ti ti-users-group"></i> Nombre de joueurs</label><input class="form-input" id="fPlayers" type="number" value="${data?.players||''}" placeholder="12"></div>`;
   if(type==='group') return `
-    <div class="form-row"><label class="form-label">Nom du groupe *</label><input class="form-input" id="fGName" value="${data?.name||''}" placeholder="ex: A"></div>`;
+    <div class="form-row"><label class="form-label"><i class="ti ti-layers-difference"></i> Nom du groupe *</label><input class="form-input" id="fGName" value="${data?.name||''}" placeholder="ex: A"></div>`;
   if(type==='ground') return `
-    <div class="form-row"><label class="form-label">Nom du terrain *</label><input class="form-input" id="fGrName" value="${data?.name||''}" placeholder="ex: Salle A — Gymnase Central"></div>
-    <div class="form-row"><label class="form-label">Lieu</label><input class="form-input" id="fGrLocation" value="${data?.location||''}" placeholder="ex: Rue du Stade"></div>
-    <div class="form-row"><label class="form-label">Capacité</label><input class="form-input" id="fGrCapacity" type="number" value="${data?.capacity||''}"></div>`;
+    <div class="form-row"><label class="form-label"><i class="ti ti-map-pin"></i> Nom du terrain *</label><input class="form-input" id="fGrName" value="${data?.name||''}" placeholder="ex: Salle A"></div>
+    <div class="form-row"><label class="form-label"><i class="ti ti-location"></i> Lieu</label><input class="form-input" id="fGrLocation" value="${data?.location||''}" placeholder="ex: Gymnase Municipal"></div>
+    <div class="form-row"><label class="form-label"><i class="ti ti-users"></i> Capacité</label><input class="form-input" id="fGrCapacity" type="number" value="${data?.capacity||''}"></div>`;
   if(type==='match') return `
     <div class="form-grid">
-      <div class="form-row"><label class="form-label">Équipe A *</label>
-        <select class="form-input" id="fTeamA">
-          <option value="">Choisir...</option>
-          ${window._teams.map(t=>`<option value="${t.id}" ${data?.teamA===t.id?'selected':''}>${t.name}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-row"><label class="form-label">Équipe B *</label>
-        <select class="form-input" id="fTeamB">
-          <option value="">Choisir...</option>
-          ${window._teams.map(t=>`<option value="${t.id}" ${data?.teamB===t.id?'selected':''}>${t.name}</option>`).join('')}
-        </select>
-      </div>
+      <div class="form-row"><label class="form-label"><i class="ti ti-users"></i> Équipe A *</label>
+        <select class="form-input" id="fTeamA">${buildTeamOptions(data?.teamA)}</select></div>
+      <div class="form-row"><label class="form-label"><i class="ti ti-users"></i> Équipe B *</label>
+        <select class="form-input" id="fTeamB">${buildTeamOptions(data?.teamB)}</select></div>
     </div>
     <div class="form-grid">
-      <div class="form-row"><label class="form-label">Terrain</label>
-        <select class="form-input" id="fVenue">
-          <option value="">Choisir...</option>
-          ${window._grounds.map(g=>`<option value="${g.name}" ${data?.venue===g.name?'selected':''}>${g.name}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-row"><label class="form-label">Groupe</label>
-        <select class="form-input" id="fMGroup">
-          <option value="">— Phase finale —</option>
-          ${window._groups.map(g=>`<option value="${g.id}" ${data?.group===g.id?'selected':''}>${g.name||g.id}</option>`).join('')}
-        </select>
-      </div>
+      <div class="form-row"><label class="form-label"><i class="ti ti-map-pin"></i> Terrain</label>
+        <select class="form-input" id="fVenue"><option value="">—</option>${window._grounds.map(g=>`<option value="${g.name}" ${data?.venue===g.name?'selected':''}>${g.name}</option>`).join('')}</select></div>
+      <div class="form-row"><label class="form-label"><i class="ti ti-layers-difference"></i> Groupe</label>
+        <select class="form-input" id="fMGroup"><option value="">— Phase finale —</option>${window._groups.map(g=>`<option value="${g.id}" ${data?.group===g.id?'selected':''}>${g.name||g.id}</option>`).join('')}</select></div>
     </div>
     <div class="form-grid">
-      <div class="form-row"><label class="form-label">Date et heure</label><input class="form-input" id="fScheduled" type="datetime-local" value="${data?.scheduledAt?new Date(data.scheduledAt.toDate?.()??data.scheduledAt).toISOString().slice(0,16):''}"></div>
-      <div class="form-row"><label class="form-label">Ronde (phase finale)</label><input class="form-input" id="fRound" value="${data?.round||''}" placeholder="ex: Quarts de finale"></div>
+      <div class="form-row"><label class="form-label"><i class="ti ti-calendar"></i> Date et heure</label><input class="form-input" id="fScheduled" type="datetime-local" value="${data?.scheduledAt?new Date(data.scheduledAt.toDate?.()??data.scheduledAt).toISOString().slice(0,16):''}"></div>
+      <div class="form-row"><label class="form-label"><i class="ti ti-tournament"></i> Phase (ex: Quarts de finale)</label><input class="form-input" id="fRound" value="${data?.round||''}" placeholder="Brassage / Poule / Quarts..."></div>
     </div>
     <div class="form-grid">
-      <div class="form-row"><label class="form-label">Nb de périodes</label><input class="form-input" id="fPeriods" type="number" value="${data?.maxPeriods||4}" min="1"></div>
-      <div class="form-row"><label class="form-label">Statut</label>
-        <select class="form-input" id="fStatus">
-          <option value="planned" ${data?.status==='planned'||!data?.status?'selected':''}>Planifié</option>
-          <option value="upcoming" ${data?.status==='upcoming'?'selected':''}>À venir</option>
-          <option value="live" ${data?.status==='live'?'selected':''}>En direct</option>
-          <option value="done" ${data?.status==='done'?'selected':''}>Terminé</option>
-        </select>
-      </div>
+      <div class="form-row"><label class="form-label"><i class="ti ti-clock"></i> Nb de périodes</label><input class="form-input" id="fPeriods" type="number" value="${data?.maxPeriods||4}" min="1"></div>
+      <div class="form-row"><label class="form-label"><i class="ti ti-flag"></i> Statut</label>
+        <select class="form-input" id="fStatus" onchange="toggleScoreFields(this.value)">
+          <option value="planned" ${data?.status==='planned'||!data?.status?'selected':''}>📅 Planifié</option>
+          <option value="upcoming" ${data?.status==='upcoming'?'selected':''}>⏳ À venir</option>
+          <option value="live" ${data?.status==='live'?'selected':''}>🔴 En direct</option>
+          <option value="done" ${data?.status==='done'?'selected':''}>✓ Terminé</option>
+        </select></div>
     </div>
-    ${data?.status==='done'?`<div class="form-grid">
-      <div class="form-row"><label class="form-label">Score A</label><input class="form-input" id="fScoreA" type="number" value="${data?.scoreA||0}"></div>
-      <div class="form-row"><label class="form-label">Score B</label><input class="form-input" id="fScoreB" type="number" value="${data?.scoreB||0}"></div>
-    </div>`:'<div id="scoreFields"></div>'}
-    <script>document.getElementById('fStatus').addEventListener('change',function(){ document.getElementById('scoreFields').innerHTML=this.value==='done'?'<div class="form-grid"><div class="form-row"><label class="form-label">Score A</label><input class="form-input" id="fScoreA" type="number" value="0"></div><div class="form-row"><label class="form-label">Score B</label><input class="form-input" id="fScoreB" type="number" value="0"></div></div>':''; })<\/script>`;
+    <div id="scoreFieldsWrap" style="display:${data?.status==='done'||data?.status==='live'?'block':'none'}">
+      <div style="background:#f9f9f9;border-radius:8px;padding:12px;margin-top:4px">
+        <div style="font-size:12px;color:#666;margin-bottom:10px;font-weight:600"><i class="ti ti-ball-basketball"></i> Scores · V=2pts · N=1pt · D=0pt</div>
+        <div class="form-grid">
+          <div class="form-row"><label class="form-label">Score ${data?teamName(data.teamA):'Équipe A'}</label><input class="form-input" id="fScoreA" type="number" min="0" value="${data?.scoreA||0}"></div>
+          <div class="form-row"><label class="form-label">Score ${data?teamName(data.teamB):'Équipe B'}</label><input class="form-input" id="fScoreB" type="number" min="0" value="${data?.scoreB||0}"></div>
+        </div>
+      </div>
+    </div>`;
   return '';
 }
-
-window.openEditTeam = function(id){
-  const t = window._teams.find(x=>x.id===id); if(!t) return;
-  window._modalMode='team'; window._editId=id;
-  document.getElementById('modalTitle').textContent='Modifier l\'équipe';
-  document.getElementById('modalBody').innerHTML = getModalForm('team',t);
-  document.getElementById('modal').classList.add('show');
-};
-window.openEditGroup = function(id){
-  const g = window._groups.find(x=>x.id===id); if(!g) return;
-  window._modalMode='group'; window._editId=id;
-  document.getElementById('modalTitle').textContent='Modifier le groupe';
-  document.getElementById('modalBody').innerHTML = getModalForm('group',g);
-  document.getElementById('modal').classList.add('show');
-};
-window.openEditGround = function(id){
-  const g = window._grounds.find(x=>x.id===id); if(!g) return;
-  window._modalMode='ground'; window._editId=id;
-  document.getElementById('modalTitle').textContent='Modifier le terrain';
-  document.getElementById('modalBody').innerHTML = getModalForm('ground',g);
-  document.getElementById('modal').classList.add('show');
-};
-window.openEditMatch = function(id){
-  const m = window._matches.find(x=>x.id===id); if(!m) return;
-  window._modalMode='match'; window._editId=id;
-  document.getElementById('modalTitle').textContent='Modifier le match';
-  document.getElementById('modalBody').innerHTML = getModalForm('match',m);
-  document.getElementById('modal').classList.add('show');
+window.toggleScoreFields=function(val){
+  document.getElementById('scoreFieldsWrap').style.display=(val==='done'||val==='live')?'block':'none';
 };
 
-window.closeModal = function(){ document.getElementById('modal').classList.remove('show'); };
+window.openEditTeam=function(id){const t=window._teams.find(x=>x.id===id);if(!t)return;window._modalMode='team';window._editId=id;document.getElementById('modalTitle').innerHTML=`<span class="modal-icon" style="background:#e3f0fd;color:#1565c0">✏️</span> Modifier l'équipe`;document.getElementById('modalBody').innerHTML=getModalForm('team',t);document.getElementById('modal').classList.add('show');};
+window.openEditGroup=function(id){const g=window._groups.find(x=>x.id===id);if(!g)return;window._modalMode='group';window._editId=id;document.getElementById('modalTitle').innerHTML=`<span class="modal-icon" style="background:#f3e5f5;color:#7b1fa2">✏️</span> Modifier le groupe`;document.getElementById('modalBody').innerHTML=getModalForm('group',g);document.getElementById('modal').classList.add('show');};
+window.openEditGround=function(id){const g=window._grounds.find(x=>x.id===id);if(!g)return;window._modalMode='ground';window._editId=id;document.getElementById('modalTitle').innerHTML=`<span class="modal-icon" style="background:#e0f7f0;color:#00695c">✏️</span> Modifier le terrain`;document.getElementById('modalBody').innerHTML=getModalForm('ground',g);document.getElementById('modal').classList.add('show');};
+window.openEditMatch=function(id){const m=window._matches.find(x=>x.id===id);if(!m)return;window._modalMode='match';window._editId=id;document.getElementById('modalTitle').innerHTML=`<span class="modal-icon" style="background:#fef3e2;color:#b7620c">✏️</span> Modifier le match`;document.getElementById('modalBody').innerHTML=getModalForm('match',m);document.getElementById('modal').classList.add('show');};
 
-window.saveModal = async function(){
-  const mode = window._modalMode; const eid = window._editId;
+window.saveModal=async function(){
+  const mode=window._modalMode;const eid=window._editId;
   try{
     if(mode==='team'){
-      const d = {name:document.getElementById('fName').value.trim(), group:document.getElementById('fGroup').value, color:document.getElementById('fColor').value, players:parseInt(document.getElementById('fPlayers').value)||0};
-      if(!d.name) return toast('Nom requis');
-      if(eid) await updateDoc(doc(db,'teams',eid),d);
-      else await addDoc(collection(db,'teams'),d);
+      const nameVal=document.getElementById('fName').value.trim();
+      if(!nameVal)return toast('Nom requis','err');
+      const fileInput=document.getElementById('fLogo');
+      let logoUrl=document.getElementById('fLogoUrl').value||'';
+      if(fileInput?.files?.[0]){
+        const file=fileInput.files[0];
+        if(file.size>2*1024*1024)return toast('Image trop lourde (max 2 Mo)','err');
+        document.getElementById('uploadProgress').style.display='block';
+        document.getElementById('uploadProgressBar').style.width='40%';
+        const storageRef=ref(storage,`logos/${Date.now()}_${file.name.replace(/\s/g,'_')}`);
+        const snap=await uploadBytes(storageRef,file);
+        document.getElementById('uploadProgressBar').style.width='90%';
+        logoUrl=await getDownloadURL(snap.ref);
+        document.getElementById('uploadProgressBar').style.width='100%';
+      }
+      const d={name:nameVal,group:document.getElementById('fGroup').value,color:document.getElementById('fColor').value,players:parseInt(document.getElementById('fPlayers').value)||0,logoUrl};
+      if(eid)await updateDoc(doc(db,'teams',eid),d);else await addDoc(collection(db,'teams'),d);
       logActivity(`Équipe ${eid?'modifiée':'ajoutée'} : ${d.name}`);
     }
     else if(mode==='group'){
-      const d = {name:document.getElementById('fGName').value.trim()};
-      if(!d.name) return toast('Nom requis');
-      if(eid) await updateDoc(doc(db,'groups',eid),d);
-      else await addDoc(collection(db,'groups'),d);
+      const d={name:document.getElementById('fGName').value.trim()};
+      if(!d.name)return toast('Nom requis','err');
+      if(eid)await updateDoc(doc(db,'groups',eid),d);else await addDoc(collection(db,'groups'),d);
       logActivity(`Groupe ${eid?'modifié':'ajouté'} : ${d.name}`);
     }
     else if(mode==='ground'){
-      const d = {name:document.getElementById('fGrName').value.trim(), location:document.getElementById('fGrLocation').value.trim(), capacity:parseInt(document.getElementById('fGrCapacity').value)||0};
-      if(!d.name) return toast('Nom requis');
-      if(eid) await updateDoc(doc(db,'grounds',eid),d);
-      else await addDoc(collection(db,'grounds'),d);
+      const d={name:document.getElementById('fGrName').value.trim(),location:document.getElementById('fGrLocation').value.trim(),capacity:parseInt(document.getElementById('fGrCapacity').value)||0};
+      if(!d.name)return toast('Nom requis','err');
+      if(eid)await updateDoc(doc(db,'grounds',eid),d);else await addDoc(collection(db,'grounds'),d);
       logActivity(`Terrain ${eid?'modifié':'ajouté'} : ${d.name}`);
     }
     else if(mode==='match'){
-      const sched = document.getElementById('fScheduled').value;
-      const d = {
+      const sched=document.getElementById('fScheduled').value;
+      const status=document.getElementById('fStatus').value;
+      const d={
         teamA:document.getElementById('fTeamA').value,
         teamB:document.getElementById('fTeamB').value,
         venue:document.getElementById('fVenue').value,
         group:document.getElementById('fMGroup').value||null,
         round:document.getElementById('fRound').value.trim()||null,
         scheduledAt:sched?new Date(sched):null,
-        status:document.getElementById('fStatus').value,
+        status,
         maxPeriods:parseInt(document.getElementById('fPeriods').value)||4,
         period:1,
         scoreA:parseInt(document.getElementById('fScoreA')?.value)||0,
         scoreB:parseInt(document.getElementById('fScoreB')?.value)||0,
       };
-      if(!d.teamA||!d.teamB) return toast('Sélectionne les deux équipes');
-      if(eid) await updateDoc(doc(db,'matches',eid),d);
-      else await addDoc(collection(db,'matches'),{...d, updatedAt:serverTimestamp()});
+      if(!d.teamA||!d.teamB)return toast('Sélectionne les deux équipes','err');
+      if(eid)await updateDoc(doc(db,'matches',eid),d);
+      else await addDoc(collection(db,'matches'),{...d,updatedAt:serverTimestamp()});
       logActivity(`Match ${eid?'modifié':'ajouté'} : ${teamName(d.teamA)} vs ${teamName(d.teamB)}`);
     }
-    closeModal();
-    toast('Enregistré ✓');
-  } catch(e){ toast('Erreur : '+e.message); console.error(e); }
+    closeModal();toast('Enregistré ✓');
+  }catch(e){toast('Erreur : '+e.message,'err');console.error(e);}
 };
 
-window.deleteItem = async function(col, id, label){
-  if(!confirm(`Supprimer ce(tte) ${label} ?`)) return;
+window.deleteItem=async function(col,id,label){
+  if(!confirm(`Supprimer ce(tte) ${label} définitivement ?`))return;
   await deleteDoc(doc(db,col,id));
   toast(`${label.charAt(0).toUpperCase()+label.slice(1)} supprimé(e)`);
-  logActivity(`${label} supprimé(e) (${id})`);
+  logActivity(`${label} supprimé(e)`);
 };
 
-// ===== FIREBASE LISTENERS =====
-onSnapshot(doc(db,'settings','tournament'), snap=>{
-  if(snap.exists()){
-    window._settings = snap.data();
-    document.getElementById('sbSub').textContent = window._settings.name||'Tournoi';
-    document.getElementById('settingName').value = window._settings.name||'';
-    document.getElementById('settingSubtitle').value = window._settings.subtitle||'';
-  }
-});
-onSnapshot(collection(db,'teams'), snap=>{
-  window._teams = snap.docs.map(d=>({id:d.id,...d.data()}));
-  renderTeams(); renderGroups(); renderDashboard(); renderLive(); renderBracketAdmin();
-});
-onSnapshot(collection(db,'matches'), snap=>{
-  window._matches = snap.docs.map(d=>({id:d.id,...d.data()}));
-  window._matches.sort((a,b)=>{
-    const ta=a.scheduledAt?.toDate?.()||new Date(a.scheduledAt||0);
-    const tb=b.scheduledAt?.toDate?.()||new Date(b.scheduledAt||0);
-    return ta-tb;
+// GENERATE MATCHES
+window.openGenerateModal=function(){
+  const venueEl=document.getElementById('genVenue');
+  venueEl.innerHTML='<option value="">— Aucun / à définir —</option>'+window._grounds.map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
+  const checksEl=document.getElementById('genGroupsCheck');
+  checksEl.innerHTML=window._groups.map(g=>`<label style="display:flex;align-items:center;gap:6px;padding:5px 10px;border:0.5px solid #ddd;border-radius:6px;cursor:pointer;font-size:13px">
+    <input type="checkbox" value="${g.id}" checked style="accent-color:#185FA5"> Groupe ${g.name||g.id} (${window._teams.filter(t=>t.group===g.id).length} équipes)</label>`).join('');
+  document.getElementById('genPreview').innerHTML='';
+  document.getElementById('genModal').classList.add('show');
+};
+window.closeGenModal=function(){document.getElementById('genModal').classList.remove('show');};
+
+function buildGenMatchList(){
+  const phase=document.getElementById('genPhase').value;
+  const venue=document.getElementById('genVenue').value;
+  const selGroups=[...document.querySelectorAll('#genGroupsCheck input:checked')].map(c=>c.value);
+  const matches=[];
+  selGroups.forEach(gid=>{
+    const gTeams=window._teams.filter(t=>t.group===gid);
+    for(let i=0;i<gTeams.length;i++) for(let j=i+1;j<gTeams.length;j++){
+      matches.push({teamA:gTeams[i].id,teamB:gTeams[j].id,group:gid,round:phase,venue,status:'planned',scoreA:0,scoreB:0,maxPeriods:4,period:1});
+    }
   });
-  renderMatches(); renderGroups(); renderDashboard(); renderLive(); renderBracketAdmin();
+  return matches;
+}
+window.previewGenerate=function(){
+  const matches=buildGenMatchList();
+  const el=document.getElementById('genPreview');
+  if(!matches.length){el.innerHTML='<div style="color:#c0392b;font-size:13px;padding:12px;background:#fde8e8;border-radius:8px"><i class="ti ti-alert-circle"></i> Aucun match à générer. Vérifie que des équipes sont assignées aux groupes sélectionnés.</div>';return;}
+  el.innerHTML=`<div style="background:#f9f9f9;border-radius:8px;padding:12px">
+    <div style="font-size:12px;font-weight:600;color:#185FA5;margin-bottom:8px"><i class="ti ti-eye"></i> Aperçu — ${matches.length} match(s) à créer</div>
+    ${matches.map(m=>`<div style="font-size:12px;padding:4px 0;border-bottom:0.5px solid #eee;display:flex;align-items:center;gap:8px">
+      <span class="badge badge-blue" style="font-size:10px">${groupName(m.group)}</span>
+      ${teamName(m.teamA)} <span style="color:#bbb">vs</span> ${teamName(m.teamB)}
+    </div>`).join('')}
+  </div>`;
+};
+window.confirmGenerate=async function(){
+  const matches=buildGenMatchList();
+  if(!matches.length)return toast('Aucun match à générer','err');
+  if(!confirm(`Créer ${matches.length} match(s) ?`))return;
+  for(const m of matches) await addDoc(collection(db,'matches'),{...m,updatedAt:serverTimestamp()});
+  logActivity(`${matches.length} matchs générés (${document.getElementById('genPhase').value})`);
+  toast(`${matches.length} matchs créés ✓`);
+  closeGenModal();
+};
+
+// FIREBASE LISTENERS
+onSnapshot(doc(db,'settings','tournament'),snap=>{
+  if(snap.exists()){window._settings=snap.data();document.getElementById('sbSub').textContent=window._settings.name||'Tournoi';document.getElementById('settingName').value=window._settings.name||'';document.getElementById('settingSubtitle').value=window._settings.subtitle||'';}
 });
-onSnapshot(collection(db,'groups'), snap=>{
-  window._groups = snap.docs.map(d=>({id:d.id,...d.data()}));
-  renderGroups(); renderBracketAdmin();
+onSnapshot(collection(db,'teams'),snap=>{
+  window._teams=snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderTeams();renderGroups();renderDashboard();renderLive();renderBracketAdmin();renderScorer();
 });
-onSnapshot(collection(db,'grounds'), snap=>{
-  window._grounds = snap.docs.map(d=>({id:d.id,...d.data()}));
-  renderGrounds(); renderDashboard();
+onSnapshot(collection(db,'matches'),snap=>{
+  window._matches=snap.docs.map(d=>({id:d.id,...d.data()}));
+  window._matches.sort((a,b)=>{const ta=a.scheduledAt?.toDate?.()||new Date(a.scheduledAt||0);const tb=b.scheduledAt?.toDate?.()||new Date(b.scheduledAt||0);return ta-tb;});
+  renderMatches();renderGroups();renderDashboard();renderLive();renderBracketAdmin();renderScorer();
+});
+onSnapshot(collection(db,'groups'),snap=>{
+  window._groups=snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderGroups();renderBracketAdmin();
+});
+onSnapshot(collection(db,'grounds'),snap=>{
+  window._grounds=snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderGrounds();renderDashboard();
 });
 </script>
 
 <script>
-// ===== LOGIN SYSTEM =====
-const ADMIN_USERS = [
-  { login: 'admin', password: 'basket2025' }
-  // Ajoute d'autres admins ici ou gère-les via Firebase settings
-];
+function previewLogo(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const zone=document.getElementById('logoDropZone');zone.classList.add('has-logo');
+    const prev=document.getElementById('logoPreviewImg');
+    if(prev.tagName==='IMG')prev.src=e.target.result;
+    else prev.outerHTML=`<img src="${e.target.result}" class="logo-preview" id="logoPreviewImg" alt="Aperçu">`;
+    document.getElementById('logoUploadText').textContent='✓ Image sélectionnée — clique Enregistrer pour valider';
+  };reader.readAsDataURL(file);
+}
+window.previewLogo=previewLogo;
 
 function doLogin(){
-  const u = document.getElementById('loginUser').value.trim();
-  const p = document.getElementById('loginPass').value;
-  // Check stored password from settings or default
-  const storedPwd = window._settings?.password || 'basket2025';
-  if((u==='admin'&&p===storedPwd)||ADMIN_USERS.some(a=>a.login===u&&a.password===p)){
-    sessionStorage.setItem('baskadmin','ok');
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  const storedPwd=window._settings?.password||'basket2025';
+  if(u==='admin'&&p===storedPwd){
+    sessionStorage.setItem('baskadmin','ok');sessionStorage.setItem('baskuser',u);
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('mainApp').style.display='flex';
-    document.getElementById('userAvatar').textContent = u.slice(0,2).toUpperCase();
-    document.getElementById('userName').textContent = u;
+    document.getElementById('userAvatar').textContent=u.slice(0,2).toUpperCase();
+    document.getElementById('userName').textContent=u;
   } else {
     document.getElementById('loginErr').style.display='block';
     setTimeout(()=>document.getElementById('loginErr').style.display='none',3000);
   }
 }
-function doLogout(){
-  sessionStorage.removeItem('baskadmin');
-  document.getElementById('loginScreen').style.display='flex';
-  document.getElementById('mainApp').style.display='none';
-}
+function doLogout(){sessionStorage.removeItem('baskadmin');document.getElementById('loginScreen').style.display='flex';document.getElementById('mainApp').style.display='none';}
 document.getElementById('loginPass').addEventListener('keydown',e=>e.key==='Enter'&&doLogin());
-
-// Auto-login if session active
 if(sessionStorage.getItem('baskadmin')){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('mainApp').style.display='flex';
+  const u=sessionStorage.getItem('baskuser')||'admin';
+  document.getElementById('userAvatar').textContent=u.slice(0,2).toUpperCase();
+  document.getElementById('userName').textContent=u;
 }
 
-// ===== NAVIGATION =====
-function nav(page, el){
+function nav(page,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   el.classList.add('active');
-  const titles={dashboard:'Tableau de bord',teams:'Équipes',groups:'Groupes',grounds:'Terrains',matches:'Matchs',live:'Scores en direct',bracket:'Tableau du tournoi',settings:'Paramètres'};
-  document.getElementById('pageTitle').textContent = titles[page]||page;
+  const titles={dashboard:'Tableau de bord',teams:'Équipes',groups:'Groupes',grounds:'Terrains',matches:'Matchs',scorer:'Saisie des scores',live:'Scores en direct',bracket:'Tableau du tournoi',settings:'Paramètres'};
+  document.getElementById('pageTitle').textContent=titles[page]||page;
 }
-window.nav = nav;
+window.nav=nav;
 </script>
 </body>
 </html>
