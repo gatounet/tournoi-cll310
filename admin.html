@@ -759,9 +759,7 @@ window.openModal=function(type){
   window._modalMode=type;window._editId=null;
   const cfg={team:{title:'Nouvelle équipe',icon:'👥',bg:'#e3f0fd',color:'#1565c0'},group:{title:'Nouveau groupe',icon:'📋',bg:'#f3e5f5',color:'#7b1fa2'},ground:{title:'Nouveau terrain',icon:'📍',bg:'#e0f7f0',color:'#00695c'},match:{title:'Nouveau match',icon:'🏀',bg:'#fef3e2',color:'#b7620c'}};
   const c=cfg[type]||{title:'Ajouter',icon:'➕',bg:'#f0f0f0',color:'#666'};
-  document.getElementById('modalIcon').textContent=c.icon;document.getElementById('modalIcon').style.cssText=`background:${c.bg};color:${c.color}`;
-  document.getElementById('modalTitle').childNodes[1]&&(document.getElementById('modalTitle').childNodes[1].textContent=' '+c.title);
-  document.getElementById('modalTitle').innerHTML=`<span class="modal-icon" style="background:${c.bg};color:${c.color}">${c.icon}</span> ${c.title}`;
+  document.getElementById('modalTitle').innerHTML=`<span class="modal-icon" id="modalIcon" style="background:${c.bg};color:${c.color}">${c.icon}</span> ${c.title}`;
   document.getElementById('modalBody').innerHTML=getModalForm(type,null);
   document.getElementById('modal').classList.add('show');
 };
