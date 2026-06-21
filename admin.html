@@ -401,7 +401,6 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -416,9 +415,8 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
-const storage = getStorage(fbApp);
 const auth = getAuth(fbApp);
-window._db = db; window._storage = storage; window._auth = auth;
+window._db = db; window._auth = auth;
 window._addDoc = addDoc; window._collection = collection; window._updateDoc = updateDoc;
 window._deleteDoc = deleteDoc; window._doc = doc; window._serverTimestamp = serverTimestamp;
 
@@ -783,7 +781,7 @@ function getModalForm(type,data){
       <div class="logo-upload-area ${data?.logoUrl?'has-logo':''}" id="logoDropZone">
         <input type="file" class="logo-upload-input" id="fLogo" accept="image/*" onchange="previewLogo(this)">
         ${data?.logoUrl?`<img src="${data.logoUrl}" class="logo-preview" id="logoPreviewImg" alt="Logo">`:`<div class="logo-placeholder" id="logoPreviewImg">🏀</div>`}
-        <div class="logo-upload-text" id="logoUploadText">${data?.logoUrl?'✓ Logo chargé — clique pour changer':'Clique ou glisse une image ici<br><span style="font-size:11px">PNG, JPG, SVG · Max 2 Mo</span>'}</div>
+        <div class="logo-upload-text" id="logoUploadText">${data?.logoUrl?'✓ Logo chargé — clique pour changer':'Clique ou glisse une image ici<br><span style="font-size:11px">PNG, JPG · compressée automatiquement</span>'}</div>
         <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
       </div>
       <input type="hidden" id="fLogoUrl" value="${data?.logoUrl||''}">
@@ -862,14 +860,24 @@ window.saveModal=async function(){
       let logoUrl=document.getElementById('fLogoUrl').value||'';
       if(fileInput?.files?.[0]){
         const file=fileInput.files[0];
-        if(file.size>2*1024*1024)return toast('Image trop lourde (max 2 Mo)','err');
+        if(file.size>8*1024*1024)return toast('Image trop lourde (max 8 Mo avant compression)','err');
         document.getElementById('uploadProgress').style.display='block';
-        document.getElementById('uploadProgressBar').style.width='40%';
-        const storageRef=ref(storage,`logos/${Date.now()}_${file.name.replace(/\s/g,'_')}`);
-        const snap=await uploadBytes(storageRef,file);
-        document.getElementById('uploadProgressBar').style.width='90%';
-        logoUrl=await getDownloadURL(snap.ref);
-        document.getElementById('uploadProgressBar').style.width='100%';
+        document.getElementById('uploadProgressBar').style.width='30%';
+        try{
+          logoUrl = await window.compressImageToBase64(file, 200, 0.75);
+          document.getElementById('uploadProgressBar').style.width='80%';
+          // Firestore field limit is ~1MB per field; base64 inflates size ~33%
+          if(logoUrl.length > 900000){
+            logoUrl = await window.compressImageToBase64(file, 140, 0.6);
+          }
+          if(logoUrl.length > 900000){
+            return toast('Image trop complexe même compressée, essaie une image plus simple','err');
+          }
+          document.getElementById('uploadProgressBar').style.width='100%';
+        }catch(err){
+          console.error(err);
+          return toast('Erreur de traitement de l\'image','err');
+        }
       }
       const d={name:nameVal,group:document.getElementById('fGroup').value,color:document.getElementById('fColor').value,players:parseInt(document.getElementById('fPlayers').value)||0,logoUrl};
       if(eid)await updateDoc(doc(db,'teams',eid),d);else await addDoc(collection(db,'teams'),d);
@@ -990,6 +998,32 @@ onSnapshot(collection(db,'grounds'),snap=>{
 </script>
 
 <script>
+function compressImageToBase64(file, maxSize, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Lecture du fichier impossible'));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Image invalide'));
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if(w > h){ if(w > maxSize){ h = Math.round(h * maxSize / w); w = maxSize; } }
+        else { if(h > maxSize){ w = Math.round(w * maxSize / h); h = maxSize; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0,0,w,h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+window.compressImageToBase64 = compressImageToBase64;
+
 function previewLogo(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
