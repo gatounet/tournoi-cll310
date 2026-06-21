@@ -166,10 +166,10 @@
     <div class="login-icon">🏀</div>
     <div class="login-title">BaskAdmin</div>
     <div class="login-sub">Administration du tournoi</div>
-    <input type="text" class="login-input" id="loginUser" placeholder="Identifiant" autocomplete="username">
+    <input type="email" class="login-input" id="loginUser" placeholder="Adresse email" autocomplete="username">
     <input type="password" class="login-input" id="loginPass" placeholder="Mot de passe" autocomplete="current-password">
-    <button class="login-btn" onclick="doLogin()"><i class="ti ti-login"></i> Se connecter</button>
-    <div class="login-err" id="loginErr">Identifiant ou mot de passe incorrect</div>
+    <button class="login-btn" onclick="doLogin()" id="loginBtn"><i class="ti ti-login"></i> Se connecter</button>
+    <div class="login-err" id="loginErr">Email ou mot de passe incorrect</div>
   </div>
 </div>
 
@@ -321,8 +321,12 @@
           <div class="card-body">
             <div class="form-row"><label class="form-label">Nom du tournoi</label><input class="form-input" id="settingName" placeholder="ex: Coupe Régionale 2025"></div>
             <div class="form-row"><label class="form-label">Sous-titre</label><input class="form-input" id="settingSubtitle" placeholder="ex: Phase de groupes · Saison 2025"></div>
-            <div class="form-row"><label class="form-label">Mot de passe admin</label><input class="form-input" type="password" id="settingPassword" placeholder="Laisser vide = inchangé"></div>
+            <div class="form-row" style="background:#f0f7ff;border-radius:8px;padding:10px 12px;font-size:12px;color:#185FA5;display:flex;align-items:center;gap:8px">
+              <i class="ti ti-shield-check"></i> La connexion admin est sécurisée par Firebase Authentication. Pour ajouter ou changer un compte admin, rends-toi dans la console Firebase → Authentication → Users.
+            </div>
             <button class="btn btn-primary" onclick="saveSettings()"><i class="ti ti-device-floppy"></i>Enregistrer</button>
+            <hr style="margin:20px 0;border:none;border-top:0.5px solid #eee">
+            <button class="btn btn-danger" onclick="doLogout()"><i class="ti ti-logout"></i> Se déconnecter</button>
           </div>
         </div>
       </div>
@@ -398,6 +402,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBO9fKLF4kkaDAux5SvyOORh-q4YDd_YeQ",
@@ -412,9 +417,30 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
 const storage = getStorage(fbApp);
-window._db = db; window._storage = storage;
+const auth = getAuth(fbApp);
+window._db = db; window._storage = storage; window._auth = auth;
 window._addDoc = addDoc; window._collection = collection; window._updateDoc = updateDoc;
 window._deleteDoc = deleteDoc; window._doc = doc; window._serverTimestamp = serverTimestamp;
+
+// ===== AUTH =====
+window.firebaseLogin = async function(email, password){
+  return signInWithEmailAndPassword(auth, email, password);
+};
+window.firebaseLogout = function(){
+  return signOut(auth);
+};
+onAuthStateChanged(auth, user => {
+  if(user){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('mainApp').style.display='flex';
+    const label = user.email || 'Admin';
+    document.getElementById('userAvatar').textContent = label.slice(0,2).toUpperCase();
+    document.getElementById('userName').textContent = label;
+  } else {
+    document.getElementById('loginScreen').style.display='flex';
+    document.getElementById('mainApp').style.display='none';
+  }
+});
 
 window._teams = []; window._matches = []; window._groups = []; window._grounds = [];
 window._settings = {}; window._matchFilter = 'all'; window._scorerFilter = 'all';
@@ -979,30 +1005,39 @@ function previewLogo(input){
 }
 window.previewLogo=previewLogo;
 
-function doLogin(){
+async function doLogin(){
   const u=document.getElementById('loginUser').value.trim();
   const p=document.getElementById('loginPass').value;
-  const storedPwd=window._settings?.password||'basket2025';
-  if(u==='admin'&&p===storedPwd){
-    sessionStorage.setItem('baskadmin','ok');sessionStorage.setItem('baskuser',u);
-    document.getElementById('loginScreen').style.display='none';
-    document.getElementById('mainApp').style.display='flex';
-    document.getElementById('userAvatar').textContent=u.slice(0,2).toUpperCase();
-    document.getElementById('userName').textContent=u;
-  } else {
+  const btn=document.getElementById('loginBtn');
+  if(!u||!p){
+    document.getElementById('loginErr').textContent='Merci de renseigner email et mot de passe';
     document.getElementById('loginErr').style.display='block';
-    setTimeout(()=>document.getElementById('loginErr').style.display='none',3000);
+    return;
+  }
+  btn.disabled=true; btn.innerHTML='<i class="ti ti-loader-2"></i> Connexion...';
+  document.getElementById('loginErr').style.display='none';
+  try{
+    await window.firebaseLogin(u,p);
+    // onAuthStateChanged handles showing the app
+  } catch(e){
+    const messages={
+      'auth/invalid-credential':'Email ou mot de passe incorrect',
+      'auth/invalid-email':'Adresse email invalide',
+      'auth/user-not-found':'Aucun compte avec cet email',
+      'auth/wrong-password':'Mot de passe incorrect',
+      'auth/too-many-requests':'Trop de tentatives, réessaie plus tard'
+    };
+    document.getElementById('loginErr').textContent = messages[e.code] || 'Email ou mot de passe incorrect';
+    document.getElementById('loginErr').style.display='block';
+  } finally {
+    btn.disabled=false; btn.innerHTML='<i class="ti ti-login"></i> Se connecter';
   }
 }
-function doLogout(){sessionStorage.removeItem('baskadmin');document.getElementById('loginScreen').style.display='flex';document.getElementById('mainApp').style.display='none';}
-document.getElementById('loginPass').addEventListener('keydown',e=>e.key==='Enter'&&doLogin());
-if(sessionStorage.getItem('baskadmin')){
-  document.getElementById('loginScreen').style.display='none';
-  document.getElementById('mainApp').style.display='flex';
-  const u=sessionStorage.getItem('baskuser')||'admin';
-  document.getElementById('userAvatar').textContent=u.slice(0,2).toUpperCase();
-  document.getElementById('userName').textContent=u;
+function doLogout(){
+  window.firebaseLogout();
 }
+document.getElementById('loginPass').addEventListener('keydown',e=>e.key==='Enter'&&doLogin());
+document.getElementById('loginUser').addEventListener('keydown',e=>e.key==='Enter'&&doLogin());
 
 function nav(page,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
