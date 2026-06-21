@@ -47,6 +47,8 @@
     .score-team{display:flex;align-items:center;gap:8px;flex:1;font-size:13px;font-weight:500}
     .score-num{font-size:20px;font-weight:700;min-width:28px;text-align:right}
     .team-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .team-logo-sm{width:22px;height:22px;border-radius:5px;object-fit:contain;background:white;border:1px solid #eee;padding:2px;flex-shrink:0}
+    .team-logo-md{width:32px;height:32px;border-radius:7px;object-fit:contain;background:white;border:1px solid #eee;padding:3px;flex-shrink:0}
     .match-card-foot{padding:8px 14px;border-top:1px solid #f0f0f0;font-size:11px;color:#999;display:flex;justify-content:space-between;align-items:center}
     .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
     .badge-live{background:#fde8e8;color:#c0392b}
@@ -217,6 +219,15 @@ function fmtDate(ts){
 }
 function teamName(id){ return teams.find(t=>t.id===id)?.name || id }
 function teamColor(id){ return teams.find(t=>t.id===id)?.color || '#999' }
+function teamLogo(id, size='sm'){
+  const t = teams.find(x=>x.id===id);
+  if(t?.logoUrl) return `<img src="${t.logoUrl}" class="team-logo-${size}" alt="${t.name||''}">`;
+  return `<div class="team-dot" style="background:${t?.color||'#999'}"></div>`;
+}
+function teamLogoByObj(t, size='sm'){
+  if(t?.logoUrl) return `<img src="${t.logoUrl}" class="team-logo-${size}" alt="${t.name||''}">`;
+  return `<div class="team-dot" style="background:${t?.color||'#999'}"></div>`;
+}
 function statusBadge(s){
   if(s==='live') return '<span class="badge badge-live">🔴 En direct</span>';
   if(s==='done') return '<span class="badge badge-done">✓ Terminé</span>';
@@ -255,12 +266,12 @@ function renderLive(){
         </div>
         <div class="match-card-body">
           <div class="score-line">
-            <div class="score-team"><div class="team-dot" style="background:${teamColor(m.teamA)}"></div>${teamName(m.teamA)}</div>
+            <div class="score-team">${teamLogo(m.teamA)}${teamName(m.teamA)}</div>
             <div class="score-num">${m.scoreA||0}</div>
           </div>
           <div style="text-align:center;font-size:11px;color:#bbb;padding:2px 0">vs</div>
           <div class="score-line">
-            <div class="score-team"><div class="team-dot" style="background:${teamColor(m.teamB)}"></div>${teamName(m.teamB)}</div>
+            <div class="score-team">${teamLogo(m.teamB)}${teamName(m.teamB)}</div>
             <div class="score-num">${m.scoreB||0}</div>
           </div>
         </div>
@@ -283,9 +294,9 @@ function renderLive(){
           ${statusBadge(m.status)}
         </div>
         <div class="match-card-body">
-          <div class="score-line"><div class="score-team"><div class="team-dot" style="background:${teamColor(m.teamA)}"></div>${teamName(m.teamA)}</div></div>
+          <div class="score-line"><div class="score-team">${teamLogo(m.teamA)}${teamName(m.teamA)}</div></div>
           <div style="text-align:center;font-size:11px;color:#bbb;padding:2px 0">vs</div>
-          <div class="score-line"><div class="score-team"><div class="team-dot" style="background:${teamColor(m.teamB)}"></div>${teamName(m.teamB)}</div></div>
+          <div class="score-line"><div class="score-team">${teamLogo(m.teamB)}${teamName(m.teamB)}</div></div>
         </div>
         <div class="match-card-foot"><span>${m.group ? 'Groupe ' + m.group : m.round||''}</span><span></span></div>
       </div>`;
@@ -306,12 +317,12 @@ function renderLive(){
         </div>
         <div class="match-card-body">
           <div class="score-line">
-            <div class="score-team" style="${wa?'font-weight:700;color:#185FA5':''}"><div class="team-dot" style="background:${teamColor(m.teamA)}"></div>${teamName(m.teamA)}</div>
+            <div class="score-team" style="${wa?'font-weight:700;color:#185FA5':''}">${teamLogo(m.teamA)}${teamName(m.teamA)}</div>
             <div class="score-num" style="${wa?'color:#185FA5':''}">${m.scoreA||0}</div>
           </div>
           <div style="text-align:center;font-size:11px;color:#bbb;padding:2px 0">vs</div>
           <div class="score-line">
-            <div class="score-team" style="${wb?'font-weight:700;color:#185FA5':''}"><div class="team-dot" style="background:${teamColor(m.teamB)}"></div>${teamName(m.teamB)}</div>
+            <div class="score-team" style="${wb?'font-weight:700;color:#185FA5':''}">${teamLogo(m.teamB)}${teamName(m.teamB)}</div>
             <div class="score-num" style="${wb?'color:#185FA5':''}">${m.scoreB||0}</div>
           </div>
         </div>
@@ -395,7 +406,7 @@ function renderStandings(){
       const diff = r.pf-r.pa;
       html += `<tr>
         <td class="${i===0?'rank-1':''}">${i+1}</td>
-        <td><div style="display:flex;align-items:center;gap:8px"><div class="team-dot" style="background:${r.color}"></div><span style="${i<2?'font-weight:600':''}">${r.name}</span></div></td>
+        <td><div style="display:flex;align-items:center;gap:8px">${teamLogoByObj(r)}<span style="${i<2?'font-weight:600':''}">${r.name}</span></div></td>
         <td>${r.p}</td><td>${r.w}</td><td>${r.l}</td>
         <td style="font-weight:700;color:${i===0?'#185FA5':'inherit'}">${r.pts}</td>
         <td style="color:${diff>0?'#2e7d32':diff<0?'#c0392b':'#999'}">${diff>0?'+':''}${diff}</td>
@@ -432,7 +443,7 @@ function renderBracket(){
         ${groups.map(g=>{
           const gTeams = teams.filter(t=>t.group===g.id);
           const stats = {};
-          gTeams.forEach(t=>{stats[t.id]={name:t.name,color:t.color,pts:0,p:0}});
+          gTeams.forEach(t=>{stats[t.id]={name:t.name,color:t.color,logoUrl:t.logoUrl||null,pts:0,p:0}});
           matches.filter(m=>m.group===g.id&&m.status==='done').forEach(m=>{
             const sA=parseInt(m.scoreA)||0,sB=parseInt(m.scoreB)||0;
             if(stats[m.teamA]){stats[m.teamA].p++;if(sA>sB)stats[m.teamA].pts+=2;else stats[m.teamA].pts+=1;}
@@ -440,7 +451,7 @@ function renderBracket(){
           });
           const sorted = Object.values(stats).sort((a,b)=>b.pts-a.pts);
           return `<div style="margin-bottom:10px"><strong>Groupe ${g.name||g.id}</strong><br>${sorted.map((t,i)=>
-            `<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0"><span class="team-dot" style="background:${t.color}"></span>${i===0?'<strong>':''}<span>${t.name}</span>${i===0?'</strong>':''} <span style="color:#bbb">(${t.pts}pts)</span></span>`
+            `<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0">${teamLogoByObj(t)}${i===0?'<strong>':''}<span>${t.name}</span>${i===0?'</strong>':''} <span style="color:#bbb">(${t.pts}pts)</span></span>`
           ).join('')}</div>`;
         }).join('')}
       </div>
@@ -464,8 +475,8 @@ function renderBracket(){
         const wA = isDone&&scoreA>scoreB, wB = isDone&&scoreB>scoreA;
         html += `<div class="bm ${isLive?'bm-live':''} ${isDone?'bm-done':''}">
           <div class="bm-teams">
-            <div class="bm-team ${wA?'winner':''}"><div class="team-dot" style="background:${teamColor(m.teamA)}"></div>${teamName(m.teamA)||'À déterminer'}</div>
-            <div class="bm-team ${wB?'winner':''}"><div class="team-dot" style="background:${teamColor(m.teamB)}"></div>${teamName(m.teamB)||'À déterminer'}</div>
+            <div class="bm-team ${wA?'winner':''}">${teamLogo(m.teamA)}${teamName(m.teamA)||'À déterminer'}</div>
+            <div class="bm-team ${wB?'winner':''}">${teamLogo(m.teamB)}${teamName(m.teamB)||'À déterminer'}</div>
           </div>
           ${isDone||isLive?`<div class="bm-score">${scoreA}<br>${scoreB}</div>`:''}
           <div class="bm-info">${m.venue||''}<br>${statusBadge(m.status)}</div>
