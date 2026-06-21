@@ -219,6 +219,7 @@ function fmtDate(ts){
 }
 function teamName(id){ return teams.find(t=>t.id===id)?.name || id }
 function teamColor(id){ return teams.find(t=>t.id===id)?.color || '#999' }
+function groupName(id){ return groups.find(g=>g.id===id)?.name || id }
 function teamLogo(id, size='sm'){
   const t = teams.find(x=>x.id===id);
   if(t?.logoUrl) return `<img src="${t.logoUrl}" class="team-logo-${size}" alt="${t.name||''}">`;
@@ -298,7 +299,7 @@ function renderLive(){
           <div style="text-align:center;font-size:11px;color:#bbb;padding:2px 0">vs</div>
           <div class="score-line"><div class="score-team">${teamLogo(m.teamB)}${teamName(m.teamB)}</div></div>
         </div>
-        <div class="match-card-foot"><span>${m.group ? 'Groupe ' + m.group : m.round||''}</span><span></span></div>
+        <div class="match-card-foot"><span>${m.group ? 'Groupe ' + groupName(m.group) : m.round||''}</span><span></span></div>
       </div>`;
     });
     html += '</div>';
@@ -326,7 +327,7 @@ function renderLive(){
             <div class="score-num" style="${wb?'color:#185FA5':''}">${m.scoreB||0}</div>
           </div>
         </div>
-        <div class="match-card-foot"><span>${m.group ? 'Groupe ' + m.group : m.round||''}</span><span></span></div>
+        <div class="match-card-foot"><span>${m.group ? 'Groupe ' + groupName(m.group) : m.round||''}</span><span></span></div>
       </div>`;
     });
     html += '</div>';
@@ -368,7 +369,7 @@ function renderSchedule(){
         <div class="sched-time">${m.scheduledAt?fmtTime(m.scheduledAt):(m.time||'—')}</div>
         <div class="sched-match">
           <div class="sched-teams"><span style="color:${teamColor(m.teamA)};font-weight:600">●</span> ${teamName(m.teamA)} <span style="color:#bbb">vs</span> <span style="color:${teamColor(m.teamB)};font-weight:600">●</span> ${teamName(m.teamB)}</div>
-          <div class="sched-meta">${m.venue||''} ${m.group?'· Groupe '+m.group:''} ${m.round?'· '+m.round:''}</div>
+          <div class="sched-meta">${m.venue||''} ${m.group?'· Groupe '+groupName(m.group):''} ${m.round?'· '+m.round:''}</div>
         </div>
         ${scoreStr}
         ${statusBadge(m.status)}
