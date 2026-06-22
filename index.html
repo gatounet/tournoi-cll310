@@ -125,13 +125,8 @@
       <div class="nav-sub" id="tournamentSub">Chargement...</div>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:10px">
-    <button id="notifBtn" onclick="toggleNotifications()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit">
-      <i class="ti ti-bell" id="notifIcon"></i><span id="notifLabel">Activer les notifications</span>
-    </button>
-    <div class="live-pill" id="livePill" style="display:none">
-      <span class="live-dot"></span> <span id="liveCount">0</span> en direct
-    </div>
+  <div class="live-pill" id="livePill" style="display:none">
+    <span class="live-dot"></span> <span id="liveCount">0</span> en direct
   </div>
 </nav>
 
@@ -507,22 +502,6 @@ function updateTimestamp(){
   document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('fr-FR');
 }
 
-function notifyMatchEnded(m){
-  const a = teamName(m.teamA), b = teamName(m.teamB);
-  const sA = m.scoreA||0, sB = m.scoreB||0;
-  const winner = sA>sB ? a : sB>sA ? b : null;
-  const title = '🏀 Fin du match !';
-  const body = winner
-    ? `${a} ${sA} – ${sB} ${b}  ·  Victoire de ${winner}`
-    : `${a} ${sA} – ${sB} ${b}  ·  Match nul`;
-  if('Notification' in window && Notification.permission === 'granted'){
-    try{
-      const n = new Notification(title, { body, icon: '🏀', tag: 'match-'+m.id });
-      n.onclick = () => { window.focus(); };
-    }catch(e){ console.warn('Notification error', e); }
-  }
-}
-
 // Settings
 onSnapshot(doc(db,'settings','tournament'), snap=>{
   if(snap.exists()){
@@ -540,23 +519,8 @@ onSnapshot(collection(db,'teams'), snap=>{
 });
 
 // Matches
-let previousMatchStatus = {};
 onSnapshot(collection(db,'matches'), snap=>{
-  const newMatches = snap.docs.map(d=>({id:d.id,...d.data()}));
-
-  // Detect matches that just transitioned to 'done' to trigger notifications
-  if(window._notifEnabled){
-    newMatches.forEach(m=>{
-      const wasStatus = previousMatchStatus[m.id];
-      if(wasStatus && wasStatus !== 'done' && m.status === 'done'){
-        notifyMatchEnded(m);
-      }
-    });
-  }
-  previousMatchStatus = {};
-  newMatches.forEach(m=>{ previousMatchStatus[m.id] = m.status; });
-
-  matches = newMatches;
+  matches = snap.docs.map(d=>({id:d.id,...d.data()}));
   matches.sort((a,b)=>{
     const ta=a.scheduledAt?.toDate?.()||new Date(a.scheduledAt||0);
     const tb=b.scheduledAt?.toDate?.()||new Date(b.scheduledAt||0);
@@ -580,64 +544,6 @@ function switchTab(name, el){
   document.getElementById('tab-'+name).classList.add('active');
   el.classList.add('active');
 }
-
-// ===== NOTIFICATIONS =====
-window._notifEnabled = false;
-
-function updateNotifButton(){
-  const btn = document.getElementById('notifBtn');
-  const icon = document.getElementById('notifIcon');
-  const label = document.getElementById('notifLabel');
-  if(!('Notification' in window)){
-    label.textContent = 'Notifications non supportées';
-    btn.style.opacity = '0.5';
-    btn.style.cursor = 'not-allowed';
-    return;
-  }
-  if(Notification.permission === 'granted' && window._notifEnabled){
-    icon.className = 'ti ti-bell-ringing';
-    label.textContent = 'Notifications activées';
-    btn.style.background = 'rgba(76,175,80,.3)';
-  } else {
-    icon.className = 'ti ti-bell';
-    label.textContent = 'Activer les notifications';
-    btn.style.background = 'rgba(255,255,255,.15)';
-  }
-}
-
-function toggleNotifications(){
-  if(!('Notification' in window)){
-    alert('Ton navigateur ne supporte pas les notifications.');
-    return;
-  }
-  if(window._notifEnabled){
-    window._notifEnabled = false;
-    updateNotifButton();
-    return;
-  }
-  if(Notification.permission === 'granted'){
-    window._notifEnabled = true;
-    updateNotifButton();
-    new Notification('🏀 Notifications activées', { body: 'Tu seras prévenu(e) à la fin de chaque match. Garde cet onglet ouvert.' });
-    return;
-  }
-  if(Notification.permission === 'denied'){
-    alert('Les notifications sont bloquées pour ce site. Active-les dans les réglages de ton navigateur (cadenas dans la barre d\'adresse).');
-    return;
-  }
-  Notification.requestPermission().then(perm=>{
-    if(perm === 'granted'){
-      window._notifEnabled = true;
-      updateNotifButton();
-      new Notification('🏀 Notifications activées', { body: 'Tu seras prévenu(e) à la fin de chaque match. Garde cet onglet ouvert.' });
-    } else {
-      updateNotifButton();
-    }
-  });
-}
-window.toggleNotifications = toggleNotifications;
-
-updateNotifButton();
 </script>
 </body>
 </html>
