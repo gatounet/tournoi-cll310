@@ -586,8 +586,9 @@ function renderMatches(){
     const isDone=m.status==='done';const isLive=m.status==='live';
     const scoreStr=(isDone||isLive)?`<strong style="font-size:15px;font-variant-numeric:tabular-nums">${m.scoreA||0} – ${m.scoreB||0}</strong>`:'<span style="color:#bbb">—</span>';
     const grpLabel=m.group?`<span class="badge badge-blue" style="font-size:10px"><i class="ti ti-layers-difference"></i>${groupName(m.group)}</span>`:m.round?`<span class="badge badge-purple" style="font-size:10px"><i class="ti ti-tournament"></i>${m.round}</span>`:'<span style="color:#bbb">—</span>';
+    const matchNum = window._matches.findIndex(x=>x.id===m.id) + 1;
     return `<tr>
-      <td style="font-size:11px;color:#bbb;font-family:monospace">#${m.id.slice(-4).toUpperCase()}</td>
+      <td style="font-size:12px;color:#185FA5;font-weight:700;font-family:monospace">#${matchNum}</td>
       <td><div class="team-row">${teamLogo(m.teamA)}<span style="font-size:13px">${teamName(m.teamA)}</span></div></td>
       <td style="text-align:center">${scoreStr}</td>
       <td><div class="team-row">${teamLogo(m.teamB)}<span style="font-size:13px">${teamName(m.teamB)}</span></div></td>
