@@ -993,7 +993,7 @@ onSnapshot(collection(db,'matches'),snap=>{
 });
 onSnapshot(collection(db,'groups'),snap=>{
   window._groups=snap.docs.map(d=>({id:d.id,...d.data()}));
-  renderGroups();renderBracketAdmin();
+  renderGroups();renderBracketAdmin();renderMatches();renderScorer();renderLive();renderTeams();
 });
 onSnapshot(collection(db,'grounds'),snap=>{
   window._grounds=snap.docs.map(d=>({id:d.id,...d.data()}));
