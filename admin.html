@@ -746,10 +746,14 @@ function renderBracketAdmin(){
 window.saveSettings=async function(){
   const name=document.getElementById('settingName').value.trim();
   const subtitle=document.getElementById('settingSubtitle').value.trim();
-  const pwd=document.getElementById('settingPassword').value;
-  const data={name,subtitle};if(pwd)data.password=pwd;
-  await setDoc(doc(db,'settings','tournament'),data,{merge:true});
-  toast('Paramètres enregistrés !');logActivity('Paramètres mis à jour');
+  if(!name){toast('Le nom du tournoi est requis','err');return;}
+  try{
+    await setDoc(doc(db,'settings','tournament'),{name,subtitle},{merge:true});
+    toast('Paramètres enregistrés !');logActivity('Paramètres mis à jour');
+  }catch(e){
+    console.error(e);
+    toast('Erreur : '+e.message,'err');
+  }
 };
 
 // MODAL SYSTEM
