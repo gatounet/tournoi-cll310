@@ -384,6 +384,23 @@
           <option value="">— Aucun / à définir —</option>
         </select>
       </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label class="form-label"><i class="ti ti-clock"></i> Heure du premier match</label>
+          <input class="form-input" id="genStartTime" type="time" value="12:00">
+        </div>
+        <div class="form-row">
+          <label class="form-label"><i class="ti ti-arrows-horizontal"></i> Intervalle entre matchs (min)</label>
+          <input class="form-input" id="genInterval" type="number" min="5" step="5" value="30">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label"><i class="ti ti-calendar"></i> Date des matchs</label>
+        <input class="form-input" id="genDate" type="date">
+      </div>
+      <div class="form-row" style="background:#f0f7ff;border-radius:8px;padding:10px 12px;font-size:12px;color:#185FA5;display:flex;align-items:center;gap:8px">
+        <i class="ti ti-info-circle"></i> L'ordre des matchs est automatiquement réorganisé pour qu'une équipe ne joue jamais deux matchs consécutifs.
+      </div>
       <div class="form-row">
         <label class="form-label">Groupes à inclure</label>
         <div id="genGroupsCheck" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px"></div>
@@ -939,6 +956,11 @@ window.openGenerateModal=function(){
   checksEl.innerHTML=window._groups.map(g=>`<label style="display:flex;align-items:center;gap:6px;padding:5px 10px;border:0.5px solid #ddd;border-radius:6px;cursor:pointer;font-size:13px">
     <input type="checkbox" value="${g.id}" checked style="accent-color:#185FA5"> Groupe ${g.name||g.id} (${window._teams.filter(t=>t.group===g.id).length} équipes)</label>`).join('');
   document.getElementById('genPreview').innerHTML='';
+  const dateEl=document.getElementById('genDate');
+  if(!dateEl.value){
+    const today=new Date();
+    dateEl.value=today.toISOString().slice(0,10);
+  }
   document.getElementById('genModal').classList.add('show');
 };
 window.closeGenModal=function(){document.getElementById('genModal').classList.remove('show');};
@@ -947,25 +969,76 @@ function buildGenMatchList(){
   const phase=document.getElementById('genPhase').value;
   const venue=document.getElementById('genVenue').value;
   const selGroups=[...document.querySelectorAll('#genGroupsCheck input:checked')].map(c=>c.value);
-  const matches=[];
+  const rawMatches=[];
   selGroups.forEach(gid=>{
     const gTeams=window._teams.filter(t=>t.group===gid);
     for(let i=0;i<gTeams.length;i++) for(let j=i+1;j<gTeams.length;j++){
-      matches.push({teamA:gTeams[i].id,teamB:gTeams[j].id,group:gid,round:phase,venue,status:'planned',scoreA:0,scoreB:0,maxPeriods:4,period:1});
+      rawMatches.push({teamA:gTeams[i].id,teamB:gTeams[j].id,group:gid,round:phase,venue,status:'planned',scoreA:0,scoreB:0,maxPeriods:4,period:1});
     }
   });
-  return matches;
+  if(!rawMatches.length) return [];
+
+  const ordered = reorderAvoidingConsecutive(rawMatches);
+
+  // Assign scheduled times
+  const dateStr = document.getElementById('genDate').value;
+  const startTime = document.getElementById('genStartTime').value || '12:00';
+  const intervalMin = Math.max(5, parseInt(document.getElementById('genInterval').value) || 30);
+  if(dateStr){
+    const [h,m] = startTime.split(':').map(Number);
+    let current = new Date(dateStr+'T00:00:00');
+    current.setHours(h, m, 0, 0);
+    ordered.forEach(match=>{
+      match.scheduledAt = new Date(current);
+      current = new Date(current.getTime() + intervalMin*60000);
+    });
+  }
+  return ordered;
 }
+
+// Reorders a list of {teamA, teamB} matches so that, as much as possible,
+// no team plays two matches in a row. Uses a greedy approach: at each step,
+// pick the next match from the remaining pool whose teams differ the most
+// from the previous match's teams (prefers no overlap, falls back to least-recent).
+function reorderAvoidingConsecutive(matchList){
+  const pool = matchList.slice();
+  const result = [];
+  let lastTeams = new Set();
+
+  while(pool.length){
+    // Find candidates with zero overlap with the last match's teams
+    let bestIdx = -1;
+    let bestScore = -1;
+    for(let i=0;i<pool.length;i++){
+      const m = pool[i];
+      const overlap = (lastTeams.has(m.teamA)?1:0) + (lastTeams.has(m.teamB)?1:0);
+      const score = -overlap; // 0 overlap is best (score 0), 1 or 2 overlap is worse
+      if(score > bestScore){
+        bestScore = score;
+        bestIdx = i;
+      }
+    }
+    const chosen = pool.splice(bestIdx,1)[0];
+    result.push(chosen);
+    lastTeams = new Set([chosen.teamA, chosen.teamB]);
+  }
+  return result;
+}
+
 window.previewGenerate=function(){
   const matches=buildGenMatchList();
   const el=document.getElementById('genPreview');
   if(!matches.length){el.innerHTML='<div style="color:#c0392b;font-size:13px;padding:12px;background:#fde8e8;border-radius:8px"><i class="ti ti-alert-circle"></i> Aucun match à générer. Vérifie que des équipes sont assignées aux groupes sélectionnés.</div>';return;}
   el.innerHTML=`<div style="background:#f9f9f9;border-radius:8px;padding:12px">
     <div style="font-size:12px;font-weight:600;color:#185FA5;margin-bottom:8px"><i class="ti ti-eye"></i> Aperçu — ${matches.length} match(s) à créer</div>
-    ${matches.map(m=>`<div style="font-size:12px;padding:4px 0;border-bottom:0.5px solid #eee;display:flex;align-items:center;gap:8px">
-      <span class="badge badge-blue" style="font-size:10px">${groupName(m.group)}</span>
-      ${teamName(m.teamA)} <span style="color:#bbb">vs</span> ${teamName(m.teamB)}
-    </div>`).join('')}
+    ${matches.map(m=>{
+      const timeStr = m.scheduledAt ? m.scheduledAt.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '—';
+      return `<div style="font-size:12px;padding:5px 0;border-bottom:0.5px solid #eee;display:flex;align-items:center;gap:8px">
+        <span style="font-family:monospace;font-weight:700;color:#185FA5;min-width:42px">${timeStr}</span>
+        <span class="badge badge-blue" style="font-size:10px">${groupName(m.group)}</span>
+        ${teamName(m.teamA)} <span style="color:#bbb">vs</span> ${teamName(m.teamB)}
+      </div>`;
+    }).join('')}
   </div>`;
 };
 window.confirmGenerate=async function(){
