@@ -329,6 +329,17 @@
             <button class="btn btn-danger" onclick="doLogout()"><i class="ti ti-logout"></i> Se déconnecter</button>
           </div>
         </div>
+
+        <div class="card" style="max-width:500px;border-color:#f5b7b7">
+          <div class="card-head" style="background:#fef7f7"><h3 style="color:#c0392b"><i class="ti ti-alert-triangle"></i> Zone dangereuse</h3></div>
+          <div class="card-body">
+            <p style="font-size:12px;color:#666;margin-bottom:14px">Sauvegarde toutes les données actuelles (équipes, matchs, groupes, terrains) dans un fichier que tu peux conserver, puis réinitialise le tournoi pour repartir de zéro.</p>
+            <button class="btn" onclick="downloadBackup()" style="margin-bottom:10px"><i class="ti ti-download"></i> Télécharger une sauvegarde (JSON)</button>
+            <div style="margin-top:10px">
+              <button class="btn btn-danger" onclick="openResetModal()"><i class="ti ti-trash-x"></i> Réinitialiser le tournoi</button>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -411,6 +422,35 @@
       <button class="btn" onclick="closeGenModal()"><i class="ti ti-x"></i>Annuler</button>
       <button class="btn" onclick="previewGenerate()"><i class="ti ti-eye"></i>Aperçu</button>
       <button class="btn btn-success" onclick="confirmGenerate()"><i class="ti ti-wand"></i>Générer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RÉINITIALISATION -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal" style="width:460px">
+    <div class="modal-head">
+      <h3><span class="modal-icon" style="background:#fde8e8;color:#c0392b">⚠️</span>Réinitialiser le tournoi</h3>
+      <button class="close-btn" onclick="closeResetModal()" title="Fermer"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="background:#fde8e8;border-radius:8px;padding:14px;margin-bottom:16px">
+        <p style="font-size:13px;color:#c0392b;font-weight:600;margin-bottom:6px"><i class="ti ti-alert-triangle"></i> Cette action est irréversible</p>
+        <p style="font-size:12px;color:#555">Toutes les équipes, matchs, groupes et terrains seront <strong>définitivement supprimés</strong> de la base de données. Les paramètres du tournoi (nom, sous-titre) seront conservés.</p>
+      </div>
+      <div id="resetStats" style="font-size:12px;color:#666;margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap"></div>
+      <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#333;cursor:pointer;padding:10px;background:#f9f9f9;border-radius:8px;margin-bottom:12px">
+        <input type="checkbox" id="resetBackupCheck" checked style="margin-top:2px;accent-color:#185FA5">
+        <span>Télécharger automatiquement une sauvegarde JSON avant la suppression (recommandé)</span>
+      </label>
+      <div class="form-row">
+        <label class="form-label">Tape <strong>RÉINITIALISER</strong> pour confirmer</label>
+        <input class="form-input" id="resetConfirmText" placeholder="RÉINITIALISER">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeResetModal()"><i class="ti ti-x"></i>Annuler</button>
+      <button class="btn btn-danger" onclick="confirmReset()"><i class="ti ti-trash-x"></i>Réinitialiser définitivement</button>
     </div>
   </div>
 </div>
@@ -771,6 +811,93 @@ window.saveSettings=async function(){
   }catch(e){
     console.error(e);
     toast('Erreur : '+e.message,'err');
+  }
+};
+
+// ===== BACKUP & RESET =====
+function buildBackupData(){
+  return {
+    exportedAt: new Date().toISOString(),
+    tournament: window._settings?.name || 'Tournoi de Basketball',
+    teams: window._teams,
+    matches: window._matches,
+    groups: window._groups,
+    grounds: window._grounds,
+  };
+}
+function triggerJsonDownload(data, filenamePrefix){
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `${filenamePrefix}_${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+window.downloadBackup=function(){
+  if(!window._teams.length && !window._matches.length){
+    toast('Aucune donnée à sauvegarder pour le moment','err');
+    return;
+  }
+  triggerJsonDownload(buildBackupData(), 'sauvegarde_tournoi');
+  toast('Sauvegarde téléchargée ✓');
+  logActivity('Sauvegarde JSON téléchargée');
+};
+
+window.openResetModal=function(){
+  const stats = document.getElementById('resetStats');
+  stats.innerHTML = `
+    <span class="badge badge-blue"><i class="ti ti-users"></i> ${window._teams.length} équipes</span>
+    <span class="badge badge-purple"><i class="ti ti-clipboard-list"></i> ${window._matches.length} matchs</span>
+    <span class="badge badge-gray"><i class="ti ti-layers-difference"></i> ${window._groups.length} groupes</span>
+    <span class="badge badge-teal"><i class="ti ti-map-pin"></i> ${window._grounds.length} terrains</span>
+  `;
+  document.getElementById('resetConfirmText').value='';
+  document.getElementById('resetBackupCheck').checked=true;
+  document.getElementById('resetModal').classList.add('show');
+};
+window.closeResetModal=function(){document.getElementById('resetModal').classList.remove('show');};
+
+window.confirmReset=async function(){
+  const confirmText = document.getElementById('resetConfirmText').value.trim();
+  if(confirmText !== 'RÉINITIALISER'){
+    toast('Tape exactement RÉINITIALISER pour confirmer','err');
+    return;
+  }
+  const wantsBackup = document.getElementById('resetBackupCheck').checked;
+  const btn = document.querySelector('#resetModal .btn-danger');
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2"></i> Réinitialisation...';
+
+  try{
+    if(wantsBackup){
+      triggerJsonDownload(buildBackupData(), 'sauvegarde_avant_reset');
+      // Small delay to let the browser handle the download before bulk deletes
+      await new Promise(r=>setTimeout(r, 600));
+    }
+
+    const allTeams = [...window._teams];
+    const allMatches = [...window._matches];
+    const allGroups = [...window._groups];
+    const allGrounds = [...window._grounds];
+
+    for(const m of allMatches) await deleteDoc(doc(db,'matches',m.id));
+    for(const t of allTeams) await deleteDoc(doc(db,'teams',t.id));
+    for(const g of allGroups) await deleteDoc(doc(db,'groups',g.id));
+    for(const g of allGrounds) await deleteDoc(doc(db,'grounds',g.id));
+
+    window._activity = [];
+    logActivity('🔄 Tournoi réinitialisé — toutes les données ont été supprimées');
+    toast('Tournoi réinitialisé avec succès');
+    closeResetModal();
+  }catch(e){
+    console.error(e);
+    toast('Erreur lors de la réinitialisation : '+e.message,'err');
+  }finally{
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-trash-x"></i>Réinitialiser définitivement';
   }
 };
 
