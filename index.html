@@ -5,112 +5,153 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tournoi de Basketball — Vue Publique</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/tabler-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root{
+      --navy:#0B1220;
+      --navy-2:#15213A;
+      --navy-3:#1E2D4D;
+      --cream:#F4F1EA;
+      --orange:#FF6B35;
+      --orange-dim:#E55A28;
+      --gold:#FFD23F;
+      --live:#16C172;
+      --line:rgba(255,255,255,.08);
+      --line-light:#E7E2D7;
+      --ink:#13182A;
+      --ink-soft:#5B6478;
+      --display:'Oswald',sans-serif;
+      --body:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;color:#1a1a1a;min-height:100vh}
-    
+    body{font-family:var(--body);background:var(--cream);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+    @media (prefers-reduced-motion: reduce){ *{animation-duration:0.001ms !important;animation-iteration-count:1 !important;transition-duration:0.001ms !important} }
+
     /* TOP NAV */
-    .topnav{background:#185FA5;color:white;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-    .nav-brand{display:flex;align-items:center;gap:10px}
-    .nav-icon{width:32px;height:32px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
-    .nav-title{font-size:15px;font-weight:600}
-    .nav-sub{font-size:11px;opacity:.7}
-    .live-pill{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);padding:4px 12px;border-radius:20px;font-size:12px;display:flex;align-items:center;gap:6px}
-    .live-dot{width:7px;height:7px;background:#ff4d4d;border-radius:50%;animation:blink 1.2s infinite}
-    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .topnav{background:var(--navy);color:var(--cream);padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 24px rgba(0,0,0,.25);border-bottom:1px solid var(--line)}
+    .nav-brand{display:flex;align-items:center;gap:12px}
+    .nav-icon{width:38px;height:38px;background:linear-gradient(145deg,var(--orange),var(--orange-dim));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 4px 14px rgba(255,107,53,.35)}
+    .nav-title{font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:.01em;line-height:1.2}
+    .nav-sub{font-size:11px;color:#8B95AC;letter-spacing:.04em;margin-top:1px}
+    .live-pill{background:rgba(22,193,114,.15);border:1px solid rgba(22,193,114,.4);padding:5px 13px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;gap:7px;color:var(--live);text-transform:uppercase}
+    .live-dot{width:7px;height:7px;background:var(--live);border-radius:50%;animation:blink 1.2s infinite;box-shadow:0 0 8px var(--live)}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
 
     /* TABS */
-    .tabs{background:white;border-bottom:1px solid #ddd;display:flex;padding:0 20px;gap:4px;overflow-x:auto}
-    .tab{padding:12px 16px;font-size:13px;font-weight:500;color:#666;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px}
-    .tab:hover{color:#333}
-    .tab.active{color:#185FA5;border-bottom-color:#185FA5}
+    .tabs{background:var(--navy-2);display:flex;padding:0 22px;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line)}
+    .tab{padding:13px 18px;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#7C87A3;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:7px;transition:color .15s}
+    .tab:hover{color:#C9CFDE}
+    .tab.active{color:var(--orange);border-bottom-color:var(--orange)}
 
     /* CONTENT */
-    .content{max-width:900px;margin:0 auto;padding:20px 16px}
+    .content{max-width:920px;margin:0 auto;padding:24px 16px 48px}
     .page{display:none}
-    .page.active{display:block}
+    .page.active{display:block;animation:fadeIn .25s ease}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+    .section-label{font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:9px}
+    .section-label.live-label{color:var(--orange-dim)}
+    .section-label.upcoming-label{color:var(--ink-soft)}
+    .section-label.done-label{color:var(--ink-soft)}
+    .section-label .dash{width:22px;height:2px;background:currentColor;opacity:.4;border-radius:2px}
 
     /* CARDS */
-    .card{background:white;border-radius:10px;border:1px solid #e8e8e8;margin-bottom:16px;overflow:hidden}
-    .card-head{padding:14px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between}
-    .card-head h3{font-size:14px;font-weight:600}
-    .card-body{padding:14px 18px}
+    .card{background:#fff;border-radius:14px;border:1px solid var(--line-light);margin-bottom:18px;overflow:hidden;box-shadow:0 1px 2px rgba(19,24,42,.04)}
+    .card-head{padding:16px 20px;border-bottom:1px solid var(--line-light);display:flex;align-items:center;justify-content:space-between;background:#FBFAF7}
+    .card-head h3{font-family:var(--display);font-size:14px;font-weight:600;letter-spacing:.02em}
+    .card-body{padding:16px 20px}
 
-    /* LIVE MATCHES */
-    .live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:20px}
-    .match-card{background:white;border:1px solid #e8e8e8;border-radius:10px;overflow:hidden;transition:box-shadow .2s}
-    .match-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08)}
-    .match-card.live-card{border-color:#e05252}
-    .match-card-head{padding:10px 14px;background:#f9f9f9;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between}
-    .match-card-body{padding:12px 14px}
-    .score-line{display:flex;align-items:center;justify-content:space-between;padding:6px 0}
-    .score-team{display:flex;align-items:center;gap:8px;flex:1;font-size:13px;font-weight:500}
-    .score-num{font-size:20px;font-weight:700;min-width:28px;text-align:right}
-    .team-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-    .team-logo-sm{width:22px;height:22px;border-radius:5px;object-fit:contain;background:white;border:1px solid #eee;padding:2px;flex-shrink:0}
-    .team-logo-md{width:32px;height:32px;border-radius:7px;object-fit:contain;background:white;border:1px solid #eee;padding:3px;flex-shrink:0}
-    .match-card-foot{padding:8px 14px;border-top:1px solid #f0f0f0;font-size:11px;color:#999;display:flex;justify-content:space-between;align-items:center}
-    .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
-    .badge-live{background:#fde8e8;color:#c0392b}
-    .badge-upcoming{background:#fef3e2;color:#b7620c}
-    .badge-done{background:#e8f5e9;color:#2e7d32}
-    .badge-planned{background:#f0f0f0;color:#666}
-    .badge-blue{background:#e3f0fd;color:#1565c0}
+    /* LIVE MATCHES — scoreboard signature */
+    .live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:30px}
+    .match-card{background:#fff;border:1px solid var(--line-light);border-radius:14px;overflow:hidden;transition:transform .18s,box-shadow .18s}
+    .match-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(19,24,42,.1)}
+
+    .match-card.live-card{background:var(--navy);border-color:var(--navy);box-shadow:0 8px 28px rgba(11,18,32,.35)}
+    .match-card-head{padding:10px 16px;background:rgba(0,0,0,.18);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#8B95AC}
+    .match-card:not(.live-card) .match-card-head{background:#FBFAF7;border-bottom:1px solid var(--line-light);color:var(--ink-soft)}
+    .match-card-body{padding:14px 16px}
+    .score-line{display:flex;align-items:center;justify-content:space-between;padding:7px 0}
+    .score-team{display:flex;align-items:center;gap:9px;flex:1;font-size:13.5px;font-weight:600;color:var(--ink)}
+    .live-card .score-team{color:#E8EAF2}
+    .score-num{font-family:var(--display);font-size:26px;font-weight:600;min-width:34px;text-align:right;font-variant-numeric:tabular-nums;letter-spacing:.01em;color:var(--ink)}
+    .live-card .score-num{color:var(--gold);text-shadow:0 0 14px rgba(255,210,63,.35)}
+    .score-vs{text-align:center;font-size:10px;color:#B7BECF;padding:1px 0;letter-spacing:.1em;font-weight:600}
+    .match-card:not(.live-card) .score-vs{color:#C7C2B2}
+    .team-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+    .team-logo-sm{width:24px;height:24px;border-radius:6px;object-fit:contain;background:white;border:1px solid var(--line-light);padding:2px;flex-shrink:0}
+    .team-logo-md{width:34px;height:34px;border-radius:8px;object-fit:contain;background:white;border:1px solid var(--line-light);padding:3px;flex-shrink:0}
+    .match-card-foot{padding:9px 16px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:#8B95AC;display:flex;justify-content:space-between;align-items:center;font-weight:500}
+    .match-card:not(.live-card) .match-card-foot{border-top:1px solid var(--line-light);color:var(--ink-soft)}
+
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+    .badge-live{background:rgba(255,107,53,.18);color:var(--orange)}
+    .live-card .badge-live{background:rgba(255,107,53,.22);color:#FF8F66}
+    .badge-upcoming{background:#FFF3DC;color:#B7740C}
+    .badge-done{background:#E3F6EC;color:#0F8B53}
+    .badge-planned{background:#EEEEEC;color:#7A7A72}
+    .badge-blue{background:#E7EDFB;color:#3656C9}
 
     /* STANDINGS */
-    table{width:100%;border-collapse:collapse;font-size:13px}
-    thead th{font-size:11px;color:#999;font-weight:600;padding:8px 10px;text-align:left;border-bottom:1px solid #f0f0f0}
-    tbody td{padding:9px 10px;border-bottom:1px solid #f5f5f5}
+    table{width:100%;border-collapse:collapse;font-size:13.5px}
+    thead th{font-family:var(--display);font-size:10.5px;color:var(--ink-soft);font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;text-align:left;border-bottom:1px solid var(--line-light)}
+    tbody td{padding:11px 12px;border-bottom:1px solid #F2EFE6;font-weight:500}
     tbody tr:last-child td{border-bottom:none}
-    tbody tr:hover{background:#fafafa}
-    .rank-1{font-weight:700;color:#185FA5}
+    tbody tr:hover{background:#FBFAF7}
+    .rank-1{font-family:var(--display);font-weight:600;color:var(--orange-dim)}
 
     /* BRACKET */
-    .bracket-phase{margin-bottom:24px}
-    .bracket-phase h4{font-size:12px;font-weight:700;color:#999;letter-spacing:.08em;margin-bottom:12px;text-transform:uppercase}
-    .bracket-matches{display:flex;flex-direction:column;gap:8px}
-    .bm{background:white;border:1px solid #e8e8e8;border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .bm.bm-live{border-left:3px solid #e05252}
-    .bm.bm-done{border-left:3px solid #2e7d32}
-    .bm-teams{flex:1;font-size:13px}
-    .bm-team{display:flex;align-items:center;gap:8px;padding:3px 0;font-weight:500}
-    .bm-team.winner{color:#185FA5}
-    .bm-info{text-align:right;font-size:12px;color:#999}
-    .bm-score{font-size:16px;font-weight:700;color:#1a1a1a;text-align:right}
-    .bm-pending{font-size:12px;color:#bbb;text-align:center;font-style:italic}
+    .bracket-phase{margin-bottom:26px}
+    .bracket-phase h4{font-family:var(--display);font-size:11.5px;font-weight:600;color:var(--ink-soft);letter-spacing:.1em;margin-bottom:13px;text-transform:uppercase}
+    .bracket-matches{display:flex;flex-direction:column;gap:9px}
+    .bm{background:#fff;border:1px solid var(--line-light);border-radius:11px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px;transition:box-shadow .15s}
+    .bm:hover{box-shadow:0 4px 14px rgba(19,24,42,.07)}
+    .bm.bm-live{border-left:3px solid var(--orange);background:linear-gradient(90deg,rgba(255,107,53,.04),transparent 40%)}
+    .bm.bm-done{border-left:3px solid var(--live)}
+    .bm-teams{flex:1;font-size:13.5px}
+    .bm-team{display:flex;align-items:center;gap:9px;padding:3px 0;font-weight:600;color:var(--ink-soft)}
+    .bm-team.winner{color:var(--ink)}
+    .bm-team.winner::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--live);margin-left:2px}
+    .bm-info{text-align:right;font-size:11.5px;color:var(--ink-soft);font-weight:500}
+    .bm-score{font-family:var(--display);font-size:18px;font-weight:600;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+    .bm-pending{font-size:12px;color:#B7BECF;text-align:center;font-style:italic}
 
     /* SCHEDULE */
-    .day-block{margin-bottom:20px}
-    .day-label{font-size:12px;font-weight:700;color:#999;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;padding-left:4px}
-    .sched-item{background:white;border:1px solid #e8e8e8;border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:16px}
-    .sched-time{font-size:13px;font-weight:700;color:#185FA5;min-width:50px}
+    .day-block{margin-bottom:24px}
+    .day-label{font-family:var(--display);font-size:11.5px;font-weight:600;color:var(--ink-soft);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;padding-left:2px;display:flex;align-items:center;gap:9px}
+    .day-label .dash{width:22px;height:2px;background:currentColor;opacity:.35;border-radius:2px}
+    .sched-item{background:#fff;border:1px solid var(--line-light);border-radius:11px;padding:13px 16px;margin-bottom:9px;display:flex;align-items:center;gap:16px;transition:box-shadow .15s}
+    .sched-item:hover{box-shadow:0 4px 14px rgba(19,24,42,.06)}
+    .sched-time{font-family:var(--display);font-size:14px;font-weight:600;color:var(--orange-dim);min-width:52px;letter-spacing:.01em}
     .sched-match{flex:1}
-    .sched-teams{font-size:13px;font-weight:500}
-    .sched-meta{font-size:11px;color:#999;margin-top:2px}
-    .sched-score{font-size:16px;font-weight:700;text-align:right}
+    .sched-teams{font-size:13.5px;font-weight:600;color:var(--ink)}
+    .sched-meta{font-size:11px;color:var(--ink-soft);margin-top:3px;font-weight:500}
+    .sched-score{font-family:var(--display);font-size:17px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
 
     /* LOADING */
-    .loading{text-align:center;padding:60px 20px;color:#999}
-    .spinner{width:32px;height:32px;border:3px solid #e8e8e8;border-top-color:#185FA5;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+    .loading{text-align:center;padding:70px 20px;color:var(--ink-soft)}
+    .spinner{width:30px;height:30px;border:3px solid var(--line-light);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
     @keyframes spin{to{transform:rotate(360deg)}}
 
     /* EMPTY */
-    .empty{text-align:center;padding:40px 20px;color:#bbb}
-    .empty i{font-size:36px;margin-bottom:8px;display:block}
+    .empty{text-align:center;padding:48px 20px;color:#B7BECF}
+    .empty i{font-size:34px;margin-bottom:10px;display:block;color:#D8D3C4}
 
     /* TICKER */
-    .ticker{background:#185FA5;color:white;padding:8px 20px;font-size:12px;display:flex;align-items:center;gap:12px;overflow:hidden}
-    .ticker-label{background:rgba(255,255,255,.2);padding:2px 8px;border-radius:4px;font-weight:700;flex-shrink:0;font-size:11px}
+    .ticker{background:var(--orange);color:#fff;padding:9px 22px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:14px;overflow:hidden}
+    .ticker-label{background:rgba(0,0,0,.18);padding:3px 10px;border-radius:5px;font-weight:700;flex-shrink:0;font-size:10.5px;letter-spacing:.05em}
     .ticker-track{overflow:hidden;flex:1}
-    .ticker-text{white-space:nowrap;animation:scroll 25s linear infinite}
+    .ticker-text{white-space:nowrap;animation:scroll 25s linear infinite;font-variant-numeric:tabular-nums}
     @keyframes scroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 
     /* FOOTER */
-    footer{text-align:center;padding:24px;font-size:12px;color:#bbb}
+    footer{text-align:center;padding:28px;font-size:11.5px;color:#B7BECF;font-weight:500}
 
     @media(max-width:600px){
       .live-grid{grid-template-columns:1fr}
-      .content{padding:12px}
+      .content{padding:16px 12px 40px}
+      .nav-title{font-size:14px}
     }
   </style>
 </head>
@@ -257,7 +298,7 @@ function renderLive(){
   let html = '';
 
   if(live.length){
-    html += `<p style="font-size:12px;font-weight:700;color:#c0392b;letter-spacing:.06em;margin-bottom:10px;text-transform:uppercase">🔴 Matchs en direct</p>`;
+    html += `<div class="section-label live-label"><span class="dash"></span>En direct maintenant</div>`;
     html += '<div class="live-grid">';
     live.forEach(m=>{
       html += `<div class="match-card live-card">
@@ -270,7 +311,7 @@ function renderLive(){
             <div class="score-team">${teamLogo(m.teamA)}${teamName(m.teamA)}</div>
             <div class="score-num">${m.scoreA||0}</div>
           </div>
-          <div style="text-align:center;font-size:11px;color:#bbb;padding:2px 0">vs</div>
+          <div class="score-vs">VS</div>
           <div class="score-line">
             <div class="score-team">${teamLogo(m.teamB)}${teamName(m.teamB)}</div>
             <div class="score-num">${m.scoreB||0}</div>
@@ -286,7 +327,7 @@ function renderLive(){
   }
 
   if(upcoming.length){
-    html += `<p style="font-size:12px;font-weight:700;color:#999;letter-spacing:.06em;margin-bottom:10px;text-transform:uppercase">⏳ Prochains matchs</p>`;
+    html += `<div class="section-label upcoming-label"><span class="dash"></span>Prochains matchs</div>`;
     html += '<div class="live-grid">';
     upcoming.forEach(m=>{
       html += `<div class="match-card">
@@ -296,7 +337,7 @@ function renderLive(){
         </div>
         <div class="match-card-body">
           <div class="score-line"><div class="score-team">${teamLogo(m.teamA)}${teamName(m.teamA)}</div></div>
-          <div style="text-align:center;font-size:11px;color:#bbb;padding:2px 0">vs</div>
+          <div class="score-vs">VS</div>
           <div class="score-line"><div class="score-team">${teamLogo(m.teamB)}${teamName(m.teamB)}</div></div>
         </div>
         <div class="match-card-foot"><span>${m.group ? 'Groupe ' + groupName(m.group) : m.round||''}</span><span></span></div>
@@ -306,7 +347,7 @@ function renderLive(){
   }
 
   if(done.length){
-    html += `<p style="font-size:12px;font-weight:700;color:#999;letter-spacing:.06em;margin-bottom:10px;text-transform:uppercase">✓ Derniers résultats</p>`;
+    html += `<div class="section-label done-label"><span class="dash"></span>Derniers résultats</div>`;
     html += '<div class="live-grid">';
     done.forEach(m=>{
       const wa = (m.scoreA||0) > (m.scoreB||0);
@@ -318,13 +359,13 @@ function renderLive(){
         </div>
         <div class="match-card-body">
           <div class="score-line">
-            <div class="score-team" style="${wa?'font-weight:700;color:#185FA5':''}">${teamLogo(m.teamA)}${teamName(m.teamA)}</div>
-            <div class="score-num" style="${wa?'color:#185FA5':''}">${m.scoreA||0}</div>
+            <div class="score-team" style="${wa?'font-weight:700;color:#0F8B53':''}">${teamLogo(m.teamA)}${teamName(m.teamA)}</div>
+            <div class="score-num" style="${wa?'color:#0F8B53':''}">${m.scoreA||0}</div>
           </div>
-          <div style="text-align:center;font-size:11px;color:#bbb;padding:2px 0">vs</div>
+          <div class="score-vs">VS</div>
           <div class="score-line">
-            <div class="score-team" style="${wb?'font-weight:700;color:#185FA5':''}">${teamLogo(m.teamB)}${teamName(m.teamB)}</div>
-            <div class="score-num" style="${wb?'color:#185FA5':''}">${m.scoreB||0}</div>
+            <div class="score-team" style="${wb?'font-weight:700;color:#0F8B53':''}">${teamLogo(m.teamB)}${teamName(m.teamB)}</div>
+            <div class="score-num" style="${wb?'color:#0F8B53':''}">${m.scoreB||0}</div>
           </div>
         </div>
         <div class="match-card-foot"><span>${m.group ? 'Groupe ' + groupName(m.group) : m.round||''}</span><span></span></div>
@@ -409,7 +450,7 @@ function renderStandings(){
         <td class="${i===0?'rank-1':''}">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${teamLogoByObj(r)}<span style="${i<2?'font-weight:600':''}">${r.name}</span></div></td>
         <td>${r.p}</td><td>${r.w}</td><td>${r.l}</td>
-        <td style="font-weight:700;color:${i===0?'#185FA5':'inherit'}">${r.pts}</td>
+        <td style="font-weight:700;color:${i===0?'#FF6B35':'inherit'}">${r.pts}</td>
         <td style="color:${diff>0?'#2e7d32':diff<0?'#c0392b':'#999'}">${diff>0?'+':''}${diff}</td>
       </tr>`;
     });
