@@ -330,6 +330,20 @@
           </div>
         </div>
 
+        <div class="card" style="max-width:500px">
+          <div class="card-head"><h3><i class="ti ti-upload" style="color:#185FA5"></i> Importer une sauvegarde</h3></div>
+          <div class="card-body">
+            <p style="font-size:12px;color:#666;margin-bottom:14px">Réimporte un fichier de sauvegarde JSON précédemment téléchargé pour restaurer équipes, matchs, groupes et terrains.</p>
+            <div class="form-row" style="background:#fff3e0;border-radius:8px;padding:10px 12px;font-size:12px;color:#b7620c;display:flex;align-items:center;gap:8px;margin-bottom:14px">
+              <i class="ti ti-alert-triangle"></i> L'import ajoute les données du fichier à celles déjà présentes. Pour repartir d'une base vide, réinitialise d'abord le tournoi (ci-dessous).
+            </div>
+            <input type="file" id="importFileInput" accept="application/json" onchange="handleImportFile(this)" style="display:none">
+            <button class="btn btn-primary" onclick="document.getElementById('importFileInput').click()"><i class="ti ti-file-upload"></i> Choisir un fichier de sauvegarde</button>
+            <div id="importFileName" style="font-size:12px;color:#666;margin-top:8px"></div>
+            <div id="importPreview" style="margin-top:14px"></div>
+          </div>
+        </div>
+
         <div class="card" style="max-width:500px;border-color:#f5b7b7">
           <div class="card-head" style="background:#fef7f7"><h3 style="color:#c0392b"><i class="ti ti-alert-triangle"></i> Zone dangereuse</h3></div>
           <div class="card-body">
@@ -451,6 +465,24 @@
     <div class="modal-foot">
       <button class="btn" onclick="closeResetModal()"><i class="ti ti-x"></i>Annuler</button>
       <button class="btn btn-danger" onclick="confirmReset()"><i class="ti ti-trash-x"></i>Réinitialiser définitivement</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPORT -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-head">
+      <h3><span class="modal-icon" style="background:#e3f0fd;color:#1565c0">📥</span>Importer la sauvegarde</h3>
+      <button class="close-btn" onclick="closeImportModal()" title="Fermer"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="importSummary" style="font-size:13px;color:#333;margin-bottom:16px"></div>
+      <div style="background:#f9f9f9;border-radius:8px;padding:12px;max-height:280px;overflow-y:auto" id="importDetailList"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeImportModal()"><i class="ti ti-x"></i>Annuler</button>
+      <button class="btn btn-primary" id="importConfirmBtn" onclick="confirmImport()"><i class="ti ti-file-upload"></i>Importer ces données</button>
     </div>
   </div>
 </div>
@@ -846,6 +878,129 @@ window.downloadBackup=function(){
   triggerJsonDownload(buildBackupData(), 'sauvegarde_tournoi');
   toast('Sauvegarde téléchargée ✓');
   logActivity('Sauvegarde JSON téléchargée');
+};
+
+// ===== IMPORT BACKUP =====
+window._importData = null;
+
+window.handleImportFile=function(input){
+  const file = input.files[0];
+  document.getElementById('importPreview').innerHTML='';
+  if(!file) return;
+  document.getElementById('importFileName').innerHTML = `<i class="ti ti-file-text"></i> ${file.name}`;
+
+  const reader = new FileReader();
+  reader.onerror = () => toast('Impossible de lire ce fichier','err');
+  reader.onload = (e) => {
+    let data;
+    try{
+      data = JSON.parse(e.target.result);
+    }catch(err){
+      toast('Fichier JSON invalide','err');
+      return;
+    }
+    const hasExpectedShape = data && (Array.isArray(data.teams) || Array.isArray(data.matches) || Array.isArray(data.groups) || Array.isArray(data.grounds));
+    if(!hasExpectedShape){
+      toast('Ce fichier ne ressemble pas à une sauvegarde de tournoi valide','err');
+      return;
+    }
+    window._importData = data;
+    openImportModal(data);
+  };
+  reader.readAsText(file);
+  // Reset input so the same file can be re-selected later if needed
+  input.value = '';
+};
+
+function openImportModal(data){
+  const nbTeams = (data.teams||[]).length;
+  const nbMatches = (data.matches||[]).length;
+  const nbGroups = (data.groups||[]).length;
+  const nbGrounds = (data.grounds||[]).length;
+  const exportedDate = data.exportedAt ? new Date(data.exportedAt).toLocaleString('fr-FR') : 'inconnue';
+
+  document.getElementById('importSummary').innerHTML = `
+    <p style="margin-bottom:10px"><i class="ti ti-calendar"></i> Sauvegarde exportée le <strong>${exportedDate}</strong>${data.tournament?` — <strong>${data.tournament}</strong>`:''}</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <span class="badge badge-blue"><i class="ti ti-users"></i> ${nbTeams} équipes</span>
+      <span class="badge badge-purple"><i class="ti ti-clipboard-list"></i> ${nbMatches} matchs</span>
+      <span class="badge badge-gray"><i class="ti ti-layers-difference"></i> ${nbGroups} groupes</span>
+      <span class="badge badge-teal"><i class="ti ti-map-pin"></i> ${nbGrounds} terrains</span>
+    </div>`;
+
+  const list = [];
+  (data.groups||[]).forEach(g=>list.push(`<i class="ti ti-layers-difference" style="color:#7b1fa2"></i> Groupe ${g.name||g.id}`));
+  (data.teams||[]).forEach(t=>list.push(`<i class="ti ti-users" style="color:#1565c0"></i> ${t.name}`));
+  (data.grounds||[]).forEach(g=>list.push(`<i class="ti ti-map-pin" style="color:#00695c"></i> ${g.name}`));
+  (data.matches||[]).slice(0,30).forEach(m=>{
+    const a = (data.teams||[]).find(t=>t.id===m.teamA)?.name || m.teamA;
+    const b = (data.teams||[]).find(t=>t.id===m.teamB)?.name || m.teamB;
+    list.push(`<i class="ti ti-ball-basketball" style="color:#b7620c"></i> ${a} vs ${b}`);
+  });
+  if((data.matches||[]).length > 30) list.push(`… et ${data.matches.length-30} autre(s) match(s)`);
+
+  document.getElementById('importDetailList').innerHTML = list.length
+    ? list.map(l=>`<div style="font-size:12px;padding:4px 0;border-bottom:0.5px solid #eee">${l}</div>`).join('')
+    : '<div style="font-size:12px;color:#bbb">Aucun élément détecté dans ce fichier</div>';
+
+  document.getElementById('importModal').classList.add('show');
+}
+window.closeImportModal=function(){
+  document.getElementById('importModal').classList.remove('show');
+  document.getElementById('importFileName').innerHTML='';
+  window._importData = null;
+};
+
+window.confirmImport=async function(){
+  const data = window._importData;
+  if(!data) return;
+  const btn = document.getElementById('importConfirmBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2"></i> Import en cours...';
+
+  try{
+    // Map old IDs to new Firestore-generated IDs so relationships (team.group, match.teamA, etc.) stay consistent
+    const groupIdMap = {};
+    const teamIdMap = {};
+
+    for(const g of (data.groups||[])){
+      const { id, ...rest } = g;
+      const ref = await addDoc(collection(db,'groups'), rest);
+      groupIdMap[id] = ref.id;
+    }
+    for(const t of (data.teams||[])){
+      const { id, group, ...rest } = t;
+      const newGroup = group && groupIdMap[group] ? groupIdMap[group] : (group || '');
+      const ref = await addDoc(collection(db,'teams'), { ...rest, group: newGroup });
+      teamIdMap[id] = ref.id;
+    }
+    for(const g of (data.grounds||[])){
+      const { id, ...rest } = g;
+      await addDoc(collection(db,'grounds'), rest);
+    }
+    for(const m of (data.matches||[])){
+      const { id, teamA, teamB, group, scheduledAt, ...rest } = m;
+      const newTeamA = teamIdMap[teamA] || teamA || '';
+      const newTeamB = teamIdMap[teamB] || teamB || '';
+      const newGroup = group && groupIdMap[group] ? groupIdMap[group] : (group || null);
+      await addDoc(collection(db,'matches'), {
+        ...rest,
+        teamA: newTeamA,
+        teamB: newTeamB,
+        group: newGroup,
+        scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+        updatedAt: serverTimestamp(),
+      });
+    }
+
+    logActivity(`Sauvegarde importée : ${(data.teams||[]).length} équipes, ${(data.matches||[]).length} matchs`);
+    toast('Import terminé avec succès ✓');
+    closeImportModal();
+  }catch(e){
+    console.error(e);
+    toast('Erreur pendant l\'import : '+e.message,'err');
+  }finally{
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-file-upload"></i>Importer ces données';
+  }
 };
 
 window.openResetModal=function(){
