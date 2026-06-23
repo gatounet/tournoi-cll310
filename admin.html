@@ -140,6 +140,12 @@
     .upload-progress{height:4px;background:#e3f0fd;border-radius:2px;margin-top:8px;overflow:hidden;display:none}
     .upload-progress-bar{height:100%;background:#185FA5;width:0%;transition:width .3s;border-radius:2px}
     .generate-box{background:linear-gradient(135deg,#e3f0fd,#f0e6ff);border:1px solid #c5d8f0;border-radius:10px;padding:16px;margin-bottom:16px}
+    .sport-option{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border:1.5px solid #ddd;border-radius:10px;cursor:pointer;transition:all .15s;background:#fff}
+    .sport-option:hover{border-color:#185FA5}
+    .sport-option.selected{border-color:#185FA5;background:#e3f0fd;box-shadow:0 0 0 1px #185FA5}
+    .sport-emoji{font-size:24px}
+    .sport-label{font-size:11px;font-weight:600;color:#555}
+    .sport-option.selected .sport-label{color:#185FA5}
     .generate-box h4{font-size:13px;font-weight:700;color:#185FA5;margin-bottom:10px;display:flex;align-items:center;gap:6px}
     .pts-legend{display:flex;gap:12px;font-size:11px;color:#666;margin-top:6px}
     .pts-legend span{display:flex;align-items:center;gap:4px}
@@ -321,6 +327,28 @@
           <div class="card-body">
             <div class="form-row"><label class="form-label">Nom du tournoi</label><input class="form-input" id="settingName" placeholder="ex: Coupe Régionale 2025"></div>
             <div class="form-row"><label class="form-label">Sous-titre</label><input class="form-input" id="settingSubtitle" placeholder="ex: Phase de groupes · Saison 2025"></div>
+            <div class="form-row">
+              <label class="form-label"><i class="ti ti-ball-basketball"></i> Sport du tournoi</label>
+              <div id="sportPicker" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px">
+                <label class="sport-option" data-sport="basketball">
+                  <input type="radio" name="sportChoice" value="basketball" style="display:none">
+                  <span class="sport-emoji">🏀</span><span class="sport-label">Basket</span>
+                </label>
+                <label class="sport-option" data-sport="football">
+                  <input type="radio" name="sportChoice" value="football" style="display:none">
+                  <span class="sport-emoji">⚽</span><span class="sport-label">Foot</span>
+                </label>
+                <label class="sport-option" data-sport="handball">
+                  <input type="radio" name="sportChoice" value="handball" style="display:none">
+                  <span class="sport-emoji">🤾</span><span class="sport-label">Hand</span>
+                </label>
+                <label class="sport-option" data-sport="volleyball">
+                  <input type="radio" name="sportChoice" value="volleyball" style="display:none">
+                  <span class="sport-emoji">🏐</span><span class="sport-label">Volley</span>
+                </label>
+              </div>
+              <div id="sportRulesHint" style="margin-top:8px;font-size:11.5px;color:#666;background:#f9f9f9;border-radius:6px;padding:8px 10px"></div>
+            </div>
             <div class="form-row" style="background:#f0f7ff;border-radius:8px;padding:10px 12px;font-size:12px;color:#185FA5;display:flex;align-items:center;gap:8px">
               <i class="ti ti-shield-check"></i> La connexion admin est sécurisée par Firebase Authentication. Pour ajouter ou changer un compte admin, rends-toi dans la console Firebase → Authentication → Users.
             </div>
@@ -386,11 +414,7 @@
       <div class="generate-box">
         <h4><i class="ti ti-info-circle"></i>Comment ça marche ?</h4>
         <p style="font-size:12px;color:#555">Tous les matchs possibles entre les équipes de chaque groupe seront générés (chaque équipe rencontre toutes les autres). Tu peux choisir le type de phase et le terrain.</p>
-        <div class="pts-legend">
-          <span>🏆 Victoire = <strong style="color:#2e7d32">2 pts</strong></span>
-          <span>🤝 Nul = <strong style="color:#f57c00">1 pt</strong></span>
-          <span>❌ Défaite = <strong style="color:#c0392b">0 pt</strong></span>
-        </div>
+        <div class="pts-legend" id="genPtsLegend"></div>
       </div>
       <div class="form-row">
         <label class="form-label">Type de phase *</label>
@@ -570,7 +594,25 @@ function statusBadge(s){
   const map={live:'<span class="badge badge-red"><i class="ti ti-live-view"></i>Live</span>',done:'<span class="badge badge-teal"><i class="ti ti-check"></i>Terminé</span>',upcoming:'<span class="badge badge-amber"><i class="ti ti-clock"></i>À venir</span>',planned:'<span class="badge badge-gray"><i class="ti ti-calendar"></i>Planifié</span>'};
   return map[s]||map['planned'];
 }
-function calcPts(sA,sB){ if(sA>sB) return {A:2,B:0}; if(sB>sA) return {A:0,B:2}; return {A:1,B:1}; }
+const SPORT_RULES = {
+  basketball: { label:'Basketball', emoji:'🏀', win:2, draw:1, loss:0, allowDraw:false, hint:'Victoire = 2 pts · Défaite = 0 pt. Pas de match nul possible (prolongation jusqu\'au vainqueur).' },
+  football:   { label:'Football',   emoji:'⚽', win:3, draw:1, loss:0, allowDraw:true,  hint:'Victoire = 3 pts · Nul = 1 pt · Défaite = 0 pt.' },
+  handball:   { label:'Handball',   emoji:'🤾', win:2, draw:1, loss:0, allowDraw:true,  hint:'Victoire = 2 pts · Nul = 1 pt · Défaite = 0 pt.' },
+  volleyball: { label:'Volleyball', emoji:'🏐', win:2, draw:0, loss:0, allowDraw:false, hint:'Victoire = 2 pts · Défaite = 0 pt. Pas de match nul (le jeu se joue en sets jusqu\'à la victoire).' },
+};
+function getCurrentSport(){ return window._settings?.sport || 'basketball'; }
+function calcPts(sA,sB){
+  const rules = SPORT_RULES[getCurrentSport()] || SPORT_RULES.basketball;
+  if(sA>sB) return {A:rules.win,B:rules.loss};
+  if(sB>sA) return {A:rules.loss,B:rules.win};
+  return {A:rules.draw,B:rules.draw};
+}
+function ptsLabel(pts){
+  const rules = SPORT_RULES[getCurrentSport()] || SPORT_RULES.basketball;
+  if(pts===rules.win) return {cls:'pts-win', text:`🏆 ${pts}pt${pts>1?'s':''}`};
+  if(pts===rules.loss) return {cls:'pts-loss', text:`❌ ${pts}pt${pts>1?'s':''}`};
+  return {cls:'pts-draw', text:`🤝 ${pts}pt${pts>1?'s':''}`};
+}
 function logActivity(action){ window._activity.unshift({action,ts:new Date()}); window._activity=window._activity.slice(0,12); renderDashActivity(); }
 
 // DASHBOARD
@@ -718,13 +760,13 @@ function renderScorer(){
       <div class="scorer-body">
         <div class="score-input-row">
           <div style="flex:1"><div class="team-row" style="margin-bottom:6px">${teamLogo(m.teamA)}<strong style="font-size:13px">${teamName(m.teamA)}</strong></div>
-            ${pts.A!==null?`<span class="pts-badge ${pts.A===2?'pts-win':pts.A===1?'pts-draw':'pts-loss'}">${pts.A===2?'🏆 2pts':pts.A===1?'🤝 1pt':'❌ 0pt'}</span>`:''}
+            ${pts.A!==null?(()=>{const l=ptsLabel(pts.A);return `<span class="pts-badge ${l.cls}">${l.text}</span>`;})():''}
           </div>
           <input class="score-input-num" id="sA-${m.id}" type="number" min="0" value="${sA}" onchange="quickScore('${m.id}','scoreA',this.value)">
           <div class="score-divider">–</div>
           <input class="score-input-num" id="sB-${m.id}" type="number" min="0" value="${sB}" onchange="quickScore('${m.id}','scoreB',this.value)">
           <div style="flex:1;text-align:right"><div class="team-row" style="margin-bottom:6px;justify-content:flex-end">${teamLogo(m.teamB)}<strong style="font-size:13px">${teamName(m.teamB)}</strong></div>
-            ${pts.B!==null?`<span class="pts-badge ${pts.B===2?'pts-win':pts.B===1?'pts-draw':'pts-loss'}" style="float:right">${pts.B===2?'🏆 2pts':pts.B===1?'🤝 1pt':'❌ 0pt'}</span>`:''}
+            ${pts.B!==null?(()=>{const l=ptsLabel(pts.B);return `<span class="pts-badge ${l.cls}" style="float:right">${l.text}</span>`;})():''}
           </div>
         </div>
         <div class="action-bar">
@@ -856,15 +898,29 @@ function renderBracketAdmin(){
 window.saveSettings=async function(){
   const name=document.getElementById('settingName').value.trim();
   const subtitle=document.getElementById('settingSubtitle').value.trim();
+  const sportInput=document.querySelector('input[name="sportChoice"]:checked');
+  const sport=sportInput?sportInput.value:'basketball';
   if(!name){toast('Le nom du tournoi est requis','err');return;}
   try{
-    await setDoc(doc(db,'settings','tournament'),{name,subtitle},{merge:true});
-    toast('Paramètres enregistrés !');logActivity('Paramètres mis à jour');
+    await setDoc(doc(db,'settings','tournament'),{name,subtitle,sport},{merge:true});
+    toast('Paramètres enregistrés !');logActivity(`Paramètres mis à jour (sport : ${SPORT_RULES[sport]?.label||sport})`);
   }catch(e){
     console.error(e);
     toast('Erreur : '+e.message,'err');
   }
 };
+
+window.selectSport=function(sport){
+  document.querySelectorAll('.sport-option').forEach(el=>el.classList.toggle('selected', el.dataset.sport===sport));
+  const radio=document.querySelector(`input[name="sportChoice"][value="${sport}"]`);
+  if(radio) radio.checked=true;
+  const rules=SPORT_RULES[sport];
+  document.getElementById('sportRulesHint').innerHTML = rules ? `<i class="ti ti-info-circle"></i> ${rules.hint}` : '';
+};
+document.addEventListener('click', e=>{
+  const opt = e.target.closest('.sport-option');
+  if(opt) window.selectSport(opt.dataset.sport);
+});
 
 // ===== BACKUP & RESET =====
 function buildBackupData(){
@@ -1264,6 +1320,11 @@ window.openGenerateModal=function(){
     const today=new Date();
     dateEl.value=today.toISOString().slice(0,10);
   }
+  const rules=SPORT_RULES[getCurrentSport()]||SPORT_RULES.basketball;
+  let legendHtml=`<span>🏆 Victoire = <strong style="color:#2e7d32">${rules.win} pt${rules.win>1?'s':''}</strong></span>`;
+  if(rules.allowDraw) legendHtml+=`<span>🤝 Nul = <strong style="color:#f57c00">${rules.draw} pt${rules.draw>1?'s':''}</strong></span>`;
+  legendHtml+=`<span>❌ Défaite = <strong style="color:#c0392b">${rules.loss} pt</strong></span>`;
+  document.getElementById('genPtsLegend').innerHTML=legendHtml;
   document.getElementById('genModal').classList.add('show');
 };
 window.closeGenModal=function(){document.getElementById('genModal').classList.remove('show');};
@@ -1356,7 +1417,16 @@ window.confirmGenerate=async function(){
 
 // FIREBASE LISTENERS
 onSnapshot(doc(db,'settings','tournament'),snap=>{
-  if(snap.exists()){window._settings=snap.data();document.getElementById('sbSub').textContent=window._settings.name||'Tournoi';document.getElementById('settingName').value=window._settings.name||'';document.getElementById('settingSubtitle').value=window._settings.subtitle||'';}
+  if(snap.exists()){
+    window._settings=snap.data();
+    document.getElementById('sbSub').textContent=window._settings.name||'Tournoi';
+    document.getElementById('settingName').value=window._settings.name||'';
+    document.getElementById('settingSubtitle').value=window._settings.subtitle||'';
+    window.selectSport(window._settings.sport||'basketball');
+    renderTeams();renderGroups();renderDashboard();renderScorer();renderBracketAdmin();
+  } else {
+    window.selectSport('basketball');
+  }
 });
 onSnapshot(collection(db,'teams'),snap=>{
   window._teams=snap.docs.map(d=>({id:d.id,...d.data()}));
