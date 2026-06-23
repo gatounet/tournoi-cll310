@@ -489,7 +489,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -516,8 +516,28 @@ window.firebaseLogin = async function(email, password){
 window.firebaseLogout = function(){
   return signOut(auth);
 };
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
   if(user){
+    // Check the user's role before granting access to the admin interface
+    let role = null;
+    try{
+      const roleSnap = await getDoc(doc(db,'roles',user.uid));
+      if(roleSnap.exists()) role = roleSnap.data().role;
+    }catch(e){
+      console.warn('Role check failed', e);
+    }
+
+    if(role === 'scorer'){
+      // Scorer accounts are not allowed on the admin interface — send them to their own page
+      document.getElementById('loginScreen').style.display='flex';
+      document.getElementById('mainApp').style.display='none';
+      document.getElementById('loginErr').textContent = 'Ce compte est un compte scoreur. Redirection vers l\'espace scoreur...';
+      document.getElementById('loginErr').style.display='block';
+      await signOut(auth);
+      setTimeout(()=>{ window.location.href = './scorer.html'; }, 1500);
+      return;
+    }
+
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('mainApp').style.display='flex';
     const label = user.email || 'Admin';
