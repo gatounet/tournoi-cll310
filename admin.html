@@ -590,6 +590,14 @@ function teamColor(id){ return window._teams.find(t=>t.id===id)?.color||'#999'; 
 function teamLogo(id){ const t=window._teams.find(x=>x.id===id); return t?.logoUrl?`<img src="${t.logoUrl}" class="team-logo" alt="${t.name}">`:`<div class="team-dot" style="background:${t?.color||'#999'}"></div>`; }
 function groupName(id){ return window._groups.find(g=>g.id===id)?.name||id||'—'; }
 function fmtDt(ts){ if(!ts)return'—'; const d=ts.toDate?ts.toDate():new Date(ts); return d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }
+// Formats a Date/Timestamp into the exact string a <input type="datetime-local"> expects,
+// using LOCAL time components (no UTC conversion) — toISOString() would shift the displayed
+// time by the timezone offset, which caused matches to appear hours earlier after re-editing.
+function toLocalDatetimeInputValue(ts){
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 function statusBadge(s){
   const map={live:'<span class="badge badge-red"><i class="ti ti-live-view"></i>Live</span>',done:'<span class="badge badge-teal"><i class="ti ti-check"></i>Terminé</span>',upcoming:'<span class="badge badge-amber"><i class="ti ti-clock"></i>À venir</span>',planned:'<span class="badge badge-gray"><i class="ti ti-calendar"></i>Planifié</span>'};
   return map[s]||map['planned'];
@@ -1197,7 +1205,7 @@ function getModalForm(type,data){
         <select class="form-input" id="fMGroup"><option value="">— Phase finale —</option>${window._groups.map(g=>`<option value="${g.id}" ${data?.group===g.id?'selected':''}>${g.name||g.id}</option>`).join('')}</select></div>
     </div>
     <div class="form-grid">
-      <div class="form-row"><label class="form-label"><i class="ti ti-calendar"></i> Date et heure</label><input class="form-input" id="fScheduled" type="datetime-local" value="${data?.scheduledAt?new Date(data.scheduledAt.toDate?.()??data.scheduledAt).toISOString().slice(0,16):''}"></div>
+      <div class="form-row"><label class="form-label"><i class="ti ti-calendar"></i> Date et heure</label><input class="form-input" id="fScheduled" type="datetime-local" value="${data?.scheduledAt?toLocalDatetimeInputValue(data.scheduledAt):''}"></div>
       <div class="form-row"><label class="form-label"><i class="ti ti-tournament"></i> Phase (ex: Quarts de finale)</label><input class="form-input" id="fRound" value="${data?.round||''}" placeholder="Brassage / Poule / Quarts..."></div>
     </div>
     <div class="form-grid">
@@ -1318,7 +1326,8 @@ window.openGenerateModal=function(){
   const dateEl=document.getElementById('genDate');
   if(!dateEl.value){
     const today=new Date();
-    dateEl.value=today.toISOString().slice(0,10);
+    const pad = n => String(n).padStart(2,'0');
+    dateEl.value=`${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
   }
   const rules=SPORT_RULES[getCurrentSport()]||SPORT_RULES.basketball;
   let legendHtml=`<span>🏆 Victoire = <strong style="color:#2e7d32">${rules.win} pt${rules.win>1?'s':''}</strong></span>`;
