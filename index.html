@@ -160,7 +160,7 @@
 <!-- TOP NAV -->
 <nav class="topnav">
   <div class="nav-brand">
-    <div class="nav-icon">🏀</div>
+    <div class="nav-icon" id="navIcon">🏀</div>
     <div>
       <div class="nav-title" id="tournamentTitle">Tournoi de Basketball</div>
       <div class="nav-sub" id="tournamentSub">Chargement...</div>
@@ -261,6 +261,18 @@ function fmtDate(ts){
 function teamName(id){ return teams.find(t=>t.id===id)?.name || id }
 function teamColor(id){ return teams.find(t=>t.id===id)?.color || '#999' }
 function groupName(id){ return groups.find(g=>g.id===id)?.name || id }
+const SPORT_RULES = {
+  basketball: { label:'Basketball', emoji:'🏀', win:2, draw:1, loss:0 },
+  football:   { label:'Football',   emoji:'⚽', win:3, draw:1, loss:0 },
+  handball:   { label:'Handball',   emoji:'🤾', win:2, draw:1, loss:0 },
+  volleyball: { label:'Volleyball', emoji:'🏐', win:2, draw:0, loss:0 },
+};
+function calcPts(sA,sB){
+  const rules = SPORT_RULES[settings?.sport || 'basketball'] || SPORT_RULES.basketball;
+  if(sA>sB) return {A:rules.win,B:rules.loss};
+  if(sB>sA) return {A:rules.loss,B:rules.win};
+  return {A:rules.draw,B:rules.draw};
+}
 function teamLogo(id, size='sm'){
   const t = teams.find(x=>x.id===id);
   if(t?.logoUrl) return `<img src="${t.logoUrl}" class="team-logo-${size}" alt="${t.name||''}">`;
@@ -432,24 +444,26 @@ function renderStandings(){
     // Compute standings from matches
     const groupTeams = teams.filter(t=>t.group===g.id);
     const stats = {};
-    groupTeams.forEach(t=>{stats[t.id]={name:t.name,color:t.color,p:0,w:0,l:0,pts:0,pf:0,pa:0}});
+    groupTeams.forEach(t=>{stats[t.id]={name:t.name,color:t.color,p:0,w:0,d:0,l:0,pts:0,pf:0,pa:0}});
     matches.filter(m=>m.group===g.id&&m.status==='done').forEach(m=>{
       const sA=parseInt(m.scoreA)||0, sB=parseInt(m.scoreB)||0;
-      if(stats[m.teamA]){stats[m.teamA].p++;stats[m.teamA].pf+=sA;stats[m.teamA].pa+=sB;if(sA>sB){stats[m.teamA].w++;stats[m.teamA].pts+=2;}else{stats[m.teamA].l++;stats[m.teamA].pts+=1;}}
-      if(stats[m.teamB]){stats[m.teamB].p++;stats[m.teamB].pf+=sB;stats[m.teamB].pa+=sA;if(sB>sA){stats[m.teamB].w++;stats[m.teamB].pts+=2;}else{stats[m.teamB].l++;stats[m.teamB].pts+=1;}}
+      const pts=calcPts(sA,sB);
+      if(stats[m.teamA]){stats[m.teamA].p++;stats[m.teamA].pf+=sA;stats[m.teamA].pa+=sB;stats[m.teamA].pts+=pts.A;if(sA>sB)stats[m.teamA].w++;else if(sA===sB)stats[m.teamA].d++;else stats[m.teamA].l++;}
+      if(stats[m.teamB]){stats[m.teamB].p++;stats[m.teamB].pf+=sB;stats[m.teamB].pa+=sA;stats[m.teamB].pts+=pts.B;if(sB>sA)stats[m.teamB].w++;else if(sA===sB)stats[m.teamB].d++;else stats[m.teamB].l++;}
     });
     const rows = Object.values(stats).sort((a,b)=>b.pts-a.pts||(b.pf-b.pa)-(a.pf-a.pa));
+    const showDraw = (SPORT_RULES[settings?.sport||'basketball']||SPORT_RULES.basketball).draw !== (SPORT_RULES[settings?.sport||'basketball']||SPORT_RULES.basketball).loss || rows.some(r=>r.d>0);
     html += `<div class="card" style="margin-bottom:16px">
       <div class="card-head"><h3>Groupe ${g.name||g.id}</h3><span class="badge badge-blue">${rows.length} équipes</span></div>
       <table>
-        <thead><tr><th>#</th><th>Équipe</th><th>J</th><th>V</th><th>D</th><th>Pts</th><th>+/-</th></tr></thead>
+        <thead><tr><th>#</th><th>Équipe</th><th>J</th><th>V</th>${showDraw?'<th>N</th>':''}<th>D</th><th>Pts</th><th>+/-</th></tr></thead>
         <tbody>`;
     rows.forEach((r,i)=>{
       const diff = r.pf-r.pa;
       html += `<tr>
         <td class="${i===0?'rank-1':''}">${i+1}</td>
         <td><div style="display:flex;align-items:center;gap:8px">${teamLogoByObj(r)}<span style="${i<2?'font-weight:600':''}">${r.name}</span></div></td>
-        <td>${r.p}</td><td>${r.w}</td><td>${r.l}</td>
+        <td>${r.p}</td><td>${r.w}</td>${showDraw?`<td>${r.d}</td>`:''}<td>${r.l}</td>
         <td style="font-weight:700;color:${i===0?'#FF6B35':'inherit'}">${r.pts}</td>
         <td style="color:${diff>0?'#2e7d32':diff<0?'#c0392b':'#999'}">${diff>0?'+':''}${diff}</td>
       </tr>`;
@@ -488,8 +502,9 @@ function renderBracket(){
           gTeams.forEach(t=>{stats[t.id]={name:t.name,color:t.color,logoUrl:t.logoUrl||null,pts:0,p:0}});
           matches.filter(m=>m.group===g.id&&m.status==='done').forEach(m=>{
             const sA=parseInt(m.scoreA)||0,sB=parseInt(m.scoreB)||0;
-            if(stats[m.teamA]){stats[m.teamA].p++;if(sA>sB)stats[m.teamA].pts+=2;else stats[m.teamA].pts+=1;}
-            if(stats[m.teamB]){stats[m.teamB].p++;if(sB>sA)stats[m.teamB].pts+=2;else stats[m.teamB].pts+=1;}
+            const pts=calcPts(sA,sB);
+            if(stats[m.teamA]){stats[m.teamA].p++;stats[m.teamA].pts+=pts.A;}
+            if(stats[m.teamB]){stats[m.teamB].p++;stats[m.teamB].pts+=pts.B;}
           });
           const sorted = Object.values(stats).sort((a,b)=>b.pts-a.pts);
           return `<div style="margin-bottom:10px"><strong>Groupe ${g.name||g.id}</strong><br>${sorted.map((t,i)=>
@@ -549,6 +564,9 @@ onSnapshot(doc(db,'settings','tournament'), snap=>{
     settings = snap.data();
     document.getElementById('tournamentTitle').textContent = settings.name||'Tournoi de Basketball';
     document.getElementById('tournamentSub').textContent = settings.subtitle||'';
+    const rules = SPORT_RULES[settings.sport] || SPORT_RULES.basketball;
+    document.getElementById('navIcon').textContent = rules.emoji;
+    renderStandings(); renderBracket();
   }
 });
 
