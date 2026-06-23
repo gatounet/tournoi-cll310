@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saisie des scores — Tournoi de Basketball</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/tabler-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --navy:#0B1220;
+      --navy-2:#15213A;
+      --navy-3:#1E2D4D;
+      --cream:#F4F1EA;
+      --orange:#FF6B35;
+      --orange-dim:#E55A28;
+      --gold:#FFD23F;
+      --live:#16C172;
+      --line-light:#E7E2D7;
+      --ink:#13182A;
+      --ink-soft:#5B6478;
+      --display:'Oswald',sans-serif;
+      --body:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--body);background:var(--cream);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+    #loginScreen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:9999}
+    .login-box{background:#fff;border-radius:16px;padding:36px 32px;width:340px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+    .login-icon{width:54px;height:54px;background:linear-gradient(145deg,var(--orange),var(--orange-dim));border-radius:14px;display:flex;align-items:center;justify-content:center;color:white;font-size:26px;margin:0 auto 16px;box-shadow:0 6px 18px rgba(255,107,53,.35)}
+    .login-title{font-family:var(--display);font-size:19px;font-weight:600;margin-bottom:4px}
+    .login-sub{font-size:13px;color:var(--ink-soft);margin-bottom:24px}
+    .login-input{width:100%;padding:11px 14px;border:1.5px solid var(--line-light);border-radius:9px;font-size:14px;margin-bottom:12px;font-family:inherit}
+    .login-input:focus{outline:none;border-color:var(--orange)}
+    .login-btn{width:100%;padding:11px;background:var(--orange);color:white;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+    .login-btn:hover{background:var(--orange-dim)}
+    .login-err{color:#c0392b;font-size:12px;margin-top:10px;display:none}
+
+    .topnav{background:var(--navy);color:var(--cream);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.25)}
+    .nav-brand{display:flex;align-items:center;gap:11px}
+    .nav-icon{width:36px;height:36px;background:linear-gradient(145deg,var(--orange),var(--orange-dim));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px}
+    .nav-title{font-family:var(--display);font-size:15px;font-weight:600}
+    .nav-sub{font-size:10.5px;color:#8B95AC}
+    .logout-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--cream);padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit}
+    .logout-btn:hover{background:rgba(255,255,255,.18)}
+
+    .content{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+
+    .filter-strip{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+    .filter-chip{padding:6px 15px;border-radius:20px;border:1.5px solid var(--line-light);font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-soft);background:#fff;display:flex;align-items:center;gap:6px}
+    .filter-chip:hover{border-color:var(--orange)}
+    .filter-chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+    .match-card{background:#fff;border:1px solid var(--line-light);border-radius:14px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 2px rgba(19,24,42,.04)}
+    .match-card.is-live{border-color:var(--orange)}
+    .match-head{padding:12px 18px;background:#FBFAF7;border-bottom:1px solid var(--line-light);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+    .match-card.is-live .match-head{background:var(--navy);border-color:var(--navy);color:#E8EAF2}
+    .match-meta{font-size:11.5px;color:var(--ink-soft);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .match-card.is-live .match-meta{color:#9AA4BD}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+    .badge-live{background:rgba(255,107,53,.2);color:#FF8F66}
+    .badge-done{background:#E3F6EC;color:#0F8B53}
+    .badge-upcoming{background:#FFF3DC;color:#B7740C}
+    .badge-planned{background:#EEEEEC;color:#7A7A72}
+
+    .match-body{padding:18px}
+    .score-row{display:flex;align-items:center;gap:14px;padding:8px 0}
+    .team-side{flex:1;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600}
+    .team-logo{width:30px;height:30px;border-radius:7px;object-fit:contain;background:white;border:1px solid var(--line-light);padding:3px;flex-shrink:0}
+    .team-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+    .score-input{width:64px;padding:8px;border:2px solid var(--line-light);border-radius:10px;font-family:var(--display);font-size:24px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+    .score-input:focus{outline:none;border-color:var(--orange)}
+    .score-divider{font-size:16px;color:#C7C2B2;font-weight:300}
+    .pts-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:12px;font-size:10.5px;font-weight:700;margin-top:4px}
+    .pts-win{background:#E3F6EC;color:#0F8B53}
+    .pts-draw{background:#FFF3DC;color:#B7740C}
+    .pts-loss{background:#fde8e8;color:#c0392b}
+
+    .edit-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line-light)}
+    .edit-field{display:flex;flex-direction:column;gap:5px}
+    .edit-label{font-size:11px;color:var(--ink-soft);font-weight:600;display:flex;align-items:center;gap:5px}
+    .edit-input{padding:8px 10px;border:1.5px solid var(--line-light);border-radius:8px;font-size:13px;font-family:inherit}
+    .edit-input:focus{outline:none;border-color:var(--orange)}
+
+    .action-bar{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:9px;border:1.5px solid var(--line-light);background:#fff;font-size:12.5px;cursor:pointer;color:var(--ink);font-family:inherit;font-weight:600;transition:all .15s}
+    .btn:hover{border-color:#C7C2B2;background:#FBFAF7}
+    .btn-primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+    .btn-primary:hover{background:var(--navy-2)}
+    .btn-success{background:#E3F6EC;color:#0F8B53;border-color:#A8E0C2}
+    .btn-success:hover{background:#D2F0E0}
+    .btn-warning{background:#FFF3DC;color:#B7740C;border-color:#FFD98A}
+    .btn-warning:hover{background:#FFEAC0}
+    .btn-danger{background:#fde8e8;color:#c0392b;border-color:#f5b7b7}
+    .btn-danger:hover{background:#fcd9d9}
+
+    .toast{position:fixed;bottom:24px;right:24px;left:24px;max-width:360px;margin-left:auto;background:var(--navy);color:white;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;display:none;align-items:center;gap:9px;box-shadow:0 8px 28px rgba(0,0,0,.3);pointer-events:none}
+    .toast.show{display:flex;animation:fadeUp .2s;pointer-events:auto}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    .empty{text-align:center;padding:60px 20px;color:#B7BECF}
+    .empty i{font-size:36px;margin-bottom:10px;display:block;color:#D8D3C4}
+
+    @media(max-width:480px){
+      .score-row{gap:8px}
+      .team-side{font-size:12.5px}
+      .score-input{width:52px;font-size:20px;padding:6px}
+      .edit-row{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">🏀</div>
+    <div class="login-title">Espace Scoreur</div>
+    <div class="login-sub">Connecte-toi pour saisir les scores</div>
+    <input type="email" class="login-input" id="loginUser" placeholder="Adresse email" autocomplete="username">
+    <input type="password" class="login-input" id="loginPass" placeholder="Mot de passe" autocomplete="current-password">
+    <button class="login-btn" onclick="doLogin()" id="loginBtn"><i class="ti ti-login"></i> Se connecter</button>
+    <div class="login-err" id="loginErr">Email ou mot de passe incorrect</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastMsg"></span></div>
+
+<div id="mainApp" style="display:none">
+  <nav class="topnav">
+    <div class="nav-brand">
+      <div class="nav-icon">🏀</div>
+      <div>
+        <div class="nav-title">Espace Scoreur</div>
+        <div class="nav-sub" id="userLabel">—</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout"></i> Déconnexion</button>
+  </nav>
+
+  <div class="content">
+    <div class="filter-strip" id="filterStrip">
+      <div class="filter-chip active" onclick="setFilter('all',this)"><i class="ti ti-list"></i> Tous</div>
+      <div class="filter-chip" onclick="setFilter('live',this)"><i class="ti ti-live-view"></i> En direct</div>
+      <div class="filter-chip" onclick="setFilter('upcoming',this)"><i class="ti ti-clock"></i> À venir</div>
+      <div class="filter-chip" onclick="setFilter('done',this)"><i class="ti ti-check"></i> Terminés</div>
+    </div>
+    <div id="matchesGrid"><div class="empty"><i class="ti ti-loader-2"></i> Chargement des matchs…</div></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, updateDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBO9fKLF4kkaDAux5SvyOORh-q4YDd_YeQ",
+  authDomain: "tournoi-cll310.firebaseapp.com",
+  projectId: "tournoi-cll310",
+  storageBucket: "tournoi-cll310.firebasestorage.app",
+  messagingSenderId: "878229681775",
+  appId: "1:878229681775:web:585b78792a49d349a13f9a",
+  measurementId: "G-LJC3CHWR5Q"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+const auth = getAuth(fbApp);
+
+window._teams = [];
+window._matches = [];
+window._groups = [];
+window._grounds = [];
+window._filter = 'all';
+
+function toast(msg, type='ok'){
+  const t=document.getElementById('toast'); const m=document.getElementById('toastMsg');
+  t.style.background = type==='err' ? '#c0392b' : '#0B1220';
+  t.querySelector('i').className = type==='err' ? 'ti ti-alert-circle' : 'ti ti-check';
+  m.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+window.toast = toast;
+
+function teamName(id){ return window._teams.find(t=>t.id===id)?.name || id || '?'; }
+function teamLogo(id){
+  const t = window._teams.find(x=>x.id===id);
+  return t?.logoUrl ? `<img src="${t.logoUrl}" class="team-logo" alt="${t.name}">` : `<div class="team-dot" style="background:${t?.color||'#999'}"></div>`;
+}
+function groupName(id){ return window._groups.find(g=>g.id===id)?.name || id || '—'; }
+function fmtDtLocal(ts){
+  if(!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toISOString().slice(0,16);
+}
+function fmtDtDisplay(ts){
+  if(!ts) return 'Heure non définie';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'}) + ' à ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+}
+function statusBadge(s){
+  const map = {
+    live: '<span class="badge badge-live"><i class="ti ti-live-view"></i> En direct</span>',
+    done: '<span class="badge badge-done"><i class="ti ti-check"></i> Terminé</span>',
+    upcoming: '<span class="badge badge-upcoming"><i class="ti ti-clock"></i> À venir</span>',
+    planned: '<span class="badge badge-planned"><i class="ti ti-calendar"></i> Planifié</span>',
+  };
+  return map[s] || map.planned;
+}
+function calcPts(a,b){ if(a>b) return {A:2,B:0}; if(b>a) return {A:0,B:2}; return {A:1,B:1}; }
+
+window.setFilter = function(f, el){
+  window._filter = f;
+  document.querySelectorAll('#filterStrip .filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderMatches();
+};
+
+function renderMatches(){
+  const f = window._filter;
+  const list = f === 'all' ? window._matches : window._matches.filter(m => m.status === f);
+  const grid = document.getElementById('matchesGrid');
+
+  if(!list.length){
+    grid.innerHTML = '<div class="empty"><i class="ti ti-ball-basketball"></i>Aucun match pour ce filtre</div>';
+    return;
+  }
+
+  grid.innerHTML = list.map(m => {
+    const isLive = m.status === 'live';
+    const isDone = m.status === 'done';
+    const sA = m.scoreA || 0, sB = m.scoreB || 0;
+    const pts = isDone ? calcPts(sA, sB) : { A: null, B: null };
+    const grpLabel = m.group ? `Groupe ${groupName(m.group)}` : (m.round || '');
+
+    return `<div class="match-card ${isLive ? 'is-live' : ''}" data-match-id="${m.id}">
+      <div class="match-head">
+        <div class="match-meta">
+          <i class="ti ti-calendar"></i> ${fmtDtDisplay(m.scheduledAt)}
+          ${m.venue ? `<span>· <i class="ti ti-map-pin"></i> ${m.venue}</span>` : ''}
+          ${grpLabel ? `<span>· ${grpLabel}</span>` : ''}
+        </div>
+        ${statusBadge(m.status)}
+      </div>
+      <div class="match-body">
+        <div class="score-row">
+          <div class="team-side">${teamLogo(m.teamA)} ${teamName(m.teamA)}</div>
+          <input class="score-input" type="number" min="0" id="sA-${m.id}" value="${sA}">
+          <div class="score-divider">—</div>
+          <input class="score-input" type="number" min="0" id="sB-${m.id}" value="${sB}">
+          <div class="team-side" style="justify-content:flex-end;text-align:right">${teamName(m.teamB)} ${teamLogo(m.teamB)}</div>
+        </div>
+        ${isDone ? `<div style="display:flex;justify-content:space-between;padding:0 2px">
+          <span class="pts-badge ${pts.A===2?'pts-win':pts.A===1?'pts-draw':'pts-loss'}">${pts.A===2?'🏆 Victoire':pts.A===1?'🤝 Nul':'❌ Défaite'} · ${pts.A}pt${pts.A>1?'s':''}</span>
+          <span class="pts-badge ${pts.B===2?'pts-win':pts.B===1?'pts-draw':'pts-loss'}">${pts.B===2?'🏆 Victoire':pts.B===1?'🤝 Nul':'❌ Défaite'} · ${pts.B}pt${pts.B>1?'s':''}</span>
+        </div>` : ''}
+
+        <div class="edit-row">
+          <div class="edit-field">
+            <label class="edit-label"><i class="ti ti-calendar-time"></i> Date et heure</label>
+            <input class="edit-input" type="datetime-local" id="dt-${m.id}" value="${fmtDtLocal(m.scheduledAt)}">
+          </div>
+          <div class="edit-field">
+            <label class="edit-label"><i class="ti ti-map-pin"></i> Terrain</label>
+            <select class="edit-input" id="venue-${m.id}">
+              <option value="">—</option>
+              ${window._grounds.map(g => `<option value="${g.name}" ${m.venue===g.name?'selected':''}>${g.name}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          ${!isLive ? `<button class="btn btn-primary" onclick="setStatus('${m.id}','live')"><i class="ti ti-player-play"></i> Démarrer</button>` : ''}
+          ${isLive ? `<button class="btn btn-success" onclick="setStatus('${m.id}','done')"><i class="ti ti-flag-3"></i> Terminer</button>` : ''}
+          ${isDone ? `<button class="btn btn-warning" onclick="setStatus('${m.id}','live')"><i class="ti ti-refresh"></i> Reprendre</button>` : ''}
+          <button class="btn btn-danger" onclick="setStatus('${m.id}','planned')"><i class="ti ti-rotate-clockwise-2"></i> Reset</button>
+          <button class="btn" onclick="saveMatch('${m.id}')"><i class="ti ti-device-floppy"></i> Enregistrer</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.saveMatch = async function(id){
+  const sA = Math.max(0, parseInt(document.getElementById('sA-'+id)?.value) || 0);
+  const sB = Math.max(0, parseInt(document.getElementById('sB-'+id)?.value) || 0);
+  const venue = document.getElementById('venue-'+id)?.value || '';
+  const dtVal = document.getElementById('dt-'+id)?.value;
+  const update = {
+    scoreA: sA,
+    scoreB: sB,
+    venue,
+    updatedAt: serverTimestamp(),
+  };
+  if(dtVal) update.scheduledAt = new Date(dtVal);
+  try{
+    await updateDoc(doc(db,'matches',id), update);
+    toast('Match enregistré ✓');
+  }catch(e){
+    console.error(e);
+    toast('Erreur : accès refusé ou problème réseau', 'err');
+  }
+};
+
+window.setStatus = async function(id, status){
+  try{
+    await updateDoc(doc(db,'matches',id), { status, updatedAt: serverTimestamp() });
+    toast(status==='live' ? 'Match démarré' : status==='done' ? 'Match terminé' : 'Match réinitialisé');
+  }catch(e){
+    console.error(e);
+    toast('Erreur : accès refusé ou problème réseau', 'err');
+  }
+};
+
+window.firebaseLogin = (email, password) => signInWithEmailAndPassword(auth, email, password);
+window.firebaseLogout = () => signOut(auth);
+
+onAuthStateChanged(auth, user => {
+  if(user){
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('userLabel').textContent = user.email || 'Scoreur';
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+  }
+});
+
+onSnapshot(collection(db,'teams'), snap => {
+  window._teams = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderMatches();
+});
+onSnapshot(collection(db,'groups'), snap => {
+  window._groups = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderMatches();
+});
+onSnapshot(collection(db,'grounds'), snap => {
+  window._grounds = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderMatches();
+});
+onSnapshot(collection(db,'matches'), snap => {
+  window._matches = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  window._matches.sort((a,b) => {
+    const ta = a.scheduledAt?.toDate?.() || new Date(a.scheduledAt || 0);
+    const tb = b.scheduledAt?.toDate?.() || new Date(b.scheduledAt || 0);
+    return ta - tb;
+  });
+  renderMatches();
+});
+</script>
+
+<script>
+async function doLogin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const btn = document.getElementById('loginBtn');
+  if(!u || !p){
+    document.getElementById('loginErr').textContent = 'Merci de renseigner email et mot de passe';
+    document.getElementById('loginErr').style.display = 'block';
+    return;
+  }
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2"></i> Connexion...';
+  document.getElementById('loginErr').style.display = 'none';
+  try{
+    await window.firebaseLogin(u, p);
+  }catch(e){
+    const messages = {
+      'auth/invalid-credential': 'Email ou mot de passe incorrect',
+      'auth/invalid-email': 'Adresse email invalide',
+      'auth/user-not-found': 'Aucun compte avec cet email',
+      'auth/wrong-password': 'Mot de passe incorrect',
+      'auth/too-many-requests': 'Trop de tentatives, réessaie plus tard',
+    };
+    document.getElementById('loginErr').textContent = messages[e.code] || 'Email ou mot de passe incorrect';
+    document.getElementById('loginErr').style.display = 'block';
+  }finally{
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i> Se connecter';
+  }
+}
+function doLogout(){ window.firebaseLogout(); }
+document.getElementById('loginPass').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+document.getElementById('loginUser').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+</script>
+</body>
+</html>
