@@ -198,7 +198,8 @@ function groupName(id){ return window._groups.find(g=>g.id===id)?.name || id || 
 function fmtDtLocal(ts){
   if(!ts) return '';
   const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toISOString().slice(0,16);
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 function fmtDtDisplay(ts){
   if(!ts) return 'Heure non définie';
