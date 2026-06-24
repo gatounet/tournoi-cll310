@@ -349,12 +349,34 @@
               </div>
               <div id="sportRulesHint" style="margin-top:8px;font-size:11.5px;color:#666;background:#f9f9f9;border-radius:6px;padding:8px 10px"></div>
             </div>
+            <div class="form-row">
+              <label class="form-label"><i class="ti ti-file-text"></i> Règlement du tournoi</label>
+              <textarea class="form-input" id="settingRules" rows="6" placeholder="Décris ici les règles du tournoi : durée des matchs, nombre de joueurs, fair-play, pénalités, etc. Ce texte sera visible par tous (public et scoreurs)." style="font-family:inherit;resize:vertical"></textarea>
+            </div>
             <div class="form-row" style="background:#f0f7ff;border-radius:8px;padding:10px 12px;font-size:12px;color:#185FA5;display:flex;align-items:center;gap:8px">
               <i class="ti ti-shield-check"></i> La connexion admin est sécurisée par Firebase Authentication. Pour ajouter ou changer un compte admin, rends-toi dans la console Firebase → Authentication → Users.
             </div>
             <button class="btn btn-primary" onclick="saveSettings()"><i class="ti ti-device-floppy"></i>Enregistrer</button>
             <hr style="margin:20px 0;border:none;border-top:0.5px solid #eee">
             <button class="btn btn-danger" onclick="doLogout()"><i class="ti ti-logout"></i> Se déconnecter</button>
+          </div>
+        </div>
+
+        <div class="card" style="max-width:500px">
+          <div class="card-head">
+            <h3><i class="ti ti-glass-cocktail" style="color:#b7620c"></i> Buvette</h3>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+              <input type="checkbox" id="settingSnackEnabled" style="accent-color:#185FA5;width:16px;height:16px">
+              Activer l'onglet
+            </label>
+          </div>
+          <div class="card-body">
+            <p style="font-size:12px;color:#666;margin-bottom:10px">Si activé, un onglet "Buvette" apparaît sur la vue publique et l'espace scoreur avec les tarifs ci-dessous.</p>
+            <div class="form-row">
+              <label class="form-label"><i class="ti ti-tools-kitchen-2"></i> Tarifs de la buvette</label>
+              <textarea class="form-input" id="settingSnackMenu" rows="6" placeholder="ex:&#10;Eau — 1€&#10;Soda — 1,50€&#10;Sandwich jambon — 3€&#10;Barre chocolatée — 1€" style="font-family:inherit;resize:vertical"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="saveSettings()"><i class="ti ti-device-floppy"></i>Enregistrer</button>
           </div>
         </div>
 
@@ -908,9 +930,12 @@ window.saveSettings=async function(){
   const subtitle=document.getElementById('settingSubtitle').value.trim();
   const sportInput=document.querySelector('input[name="sportChoice"]:checked');
   const sport=sportInput?sportInput.value:'basketball';
+  const rules=document.getElementById('settingRules').value.trim();
+  const snackEnabled=document.getElementById('settingSnackEnabled').checked;
+  const snackMenu=document.getElementById('settingSnackMenu').value.trim();
   if(!name){toast('Le nom du tournoi est requis','err');return;}
   try{
-    await setDoc(doc(db,'settings','tournament'),{name,subtitle,sport},{merge:true});
+    await setDoc(doc(db,'settings','tournament'),{name,subtitle,sport,rules,snackEnabled,snackMenu},{merge:true});
     toast('Paramètres enregistrés !');logActivity(`Paramètres mis à jour (sport : ${SPORT_RULES[sport]?.label||sport})`);
   }catch(e){
     console.error(e);
@@ -935,6 +960,7 @@ function buildBackupData(){
   return {
     exportedAt: new Date().toISOString(),
     tournament: window._settings?.name || 'Tournoi de Basketball',
+    settings: window._settings || {},
     teams: window._teams,
     matches: window._matches,
     groups: window._groups,
@@ -1074,6 +1100,11 @@ window.confirmImport=async function(){
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
         updatedAt: serverTimestamp(),
       });
+    }
+
+    // Restore tournament settings (name, subtitle, sport, rules, snack bar) if present in the backup
+    if(data.settings && Object.keys(data.settings).length){
+      await setDoc(doc(db,'settings','tournament'), data.settings, {merge:true});
     }
 
     logActivity(`Sauvegarde importée : ${(data.teams||[]).length} équipes, ${(data.matches||[]).length} matchs`);
@@ -1431,6 +1462,9 @@ onSnapshot(doc(db,'settings','tournament'),snap=>{
     document.getElementById('sbSub').textContent=window._settings.name||'Tournoi';
     document.getElementById('settingName').value=window._settings.name||'';
     document.getElementById('settingSubtitle').value=window._settings.subtitle||'';
+    document.getElementById('settingRules').value=window._settings.rules||'';
+    document.getElementById('settingSnackEnabled').checked=!!window._settings.snackEnabled;
+    document.getElementById('settingSnackMenu').value=window._settings.snackMenu||'';
     window.selectSport(window._settings.sport||'basketball');
     renderTeams();renderGroups();renderDashboard();renderScorer();renderBracketAdmin();
   } else {
