@@ -48,10 +48,20 @@
 
     .content{max-width:760px;margin:0 auto;padding:20px 16px 60px}
 
+    .main-tabs{background:var(--navy-2);display:flex;padding:0 16px;gap:2px;overflow-x:auto}
+    .main-tab{padding:13px 18px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#7C87A3;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:7px}
+    .main-tab:hover{color:#C9CFDE}
+    .main-tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+    .main-page{display:none}
+    .main-page.active{display:block}
+
     .filter-strip{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
     .filter-chip{padding:6px 15px;border-radius:20px;border:1.5px solid var(--line-light);font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-soft);background:#fff;display:flex;align-items:center;gap:6px}
     .filter-chip:hover{border-color:var(--orange)}
     .filter-chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+    .venue-filter{padding:6px 14px;border-radius:20px;border:1.5px solid var(--line-light);font-size:12px;font-weight:600;color:var(--ink-soft);background:#fff;font-family:inherit;cursor:pointer}
+    .venue-filter:hover{border-color:var(--orange)}
+    .venue-filter:focus{outline:none;border-color:var(--orange)}
 
     .match-card{background:#fff;border:1px solid var(--line-light);border-radius:14px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 2px rgba(19,24,42,.04)}
     .match-card.is-live{border-color:var(--orange)}
@@ -78,6 +88,9 @@
     .step-btn.plus{background:#E3F6EC;border-color:#A8E0C2;color:#0F8B53}
     .step-btn.plus:hover{background:#D2F0E0}
     .score-divider{font-size:16px;color:#C7C2B2;font-weight:300}
+    .period-row{display:flex;align-items:center;justify-content:space-between;padding:10px 2px;margin-top:8px;border-top:1px solid var(--line-light)}
+    .period-stepper{display:flex;align-items:center;gap:10px}
+    .period-value{font-family:var(--display);font-size:15px;font-weight:600;min-width:46px;text-align:center;font-variant-numeric:tabular-nums}
     .pts-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:12px;font-size:10.5px;font-weight:700;margin-top:4px}
     .pts-win{background:#E3F6EC;color:#0F8B53}
     .pts-draw{background:#FFF3DC;color:#B7740C}
@@ -144,14 +157,33 @@
     <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout"></i> Déconnexion</button>
   </nav>
 
+  <div class="main-tabs" id="mainTabs">
+    <div class="main-tab active" onclick="switchMainTab('matches',this)"><i class="ti ti-ball-basketball"></i> Matchs</div>
+    <div class="main-tab" onclick="switchMainTab('rules',this)"><i class="ti ti-file-text"></i> Règlement</div>
+    <div class="main-tab" id="snackMainTab" style="display:none" onclick="switchMainTab('snack',this)"><i class="ti ti-glass-cocktail"></i> Buvette</div>
+  </div>
+
   <div class="content">
-    <div class="filter-strip" id="filterStrip">
-      <div class="filter-chip active" onclick="setFilter('all',this)"><i class="ti ti-list"></i> Tous</div>
-      <div class="filter-chip" onclick="setFilter('live',this)"><i class="ti ti-live-view"></i> En direct</div>
-      <div class="filter-chip" onclick="setFilter('upcoming',this)"><i class="ti ti-clock"></i> À venir</div>
-      <div class="filter-chip" onclick="setFilter('done',this)"><i class="ti ti-check"></i> Terminés</div>
+    <div class="main-page active" id="page-matches">
+      <div class="filter-strip" id="filterStrip">
+        <div class="filter-chip active" onclick="setFilter('all',this)"><i class="ti ti-list"></i> Tous</div>
+        <div class="filter-chip" onclick="setFilter('live',this)"><i class="ti ti-live-view"></i> En direct</div>
+        <div class="filter-chip" onclick="setFilter('upcoming',this)"><i class="ti ti-clock"></i> À venir</div>
+        <div class="filter-chip" onclick="setFilter('done',this)"><i class="ti ti-check"></i> Terminés</div>
+        <select class="venue-filter" id="venueFilter" onchange="setVenueFilter(this.value)">
+          <option value="all">🏟️ Tous les terrains</option>
+        </select>
+      </div>
+      <div id="matchesGrid"><div class="empty"><i class="ti ti-loader-2"></i> Chargement des matchs…</div></div>
     </div>
-    <div id="matchesGrid"><div class="empty"><i class="ti ti-loader-2"></i> Chargement des matchs…</div></div>
+
+    <div class="main-page" id="page-rules">
+      <div id="rulesSection"><div class="empty"><i class="ti ti-file-text"></i>Aucun règlement n'a encore été publié</div></div>
+    </div>
+
+    <div class="main-page" id="page-snack">
+      <div id="snackSection"><div class="empty"><i class="ti ti-glass-cocktail"></i>Aucun tarif n'a encore été publié</div></div>
+    </div>
   </div>
 </div>
 
@@ -179,6 +211,7 @@ window._matches = [];
 window._groups = [];
 window._grounds = [];
 window._filter = 'all';
+window._venueFilter = 'all';
 
 function toast(msg, type='ok'){
   const t=document.getElementById('toast'); const m=document.getElementById('toastMsg');
@@ -236,6 +269,37 @@ function ptsLabel(pts){
   return {cls:'pts-draw', text:`🤝 Nul · ${pts}pt${pts>1?'s':''}`};
 }
 
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+function renderRules(){
+  const rulesText = window._settings?.rules || '';
+  const el = document.getElementById('rulesSection');
+  el.innerHTML = rulesText.trim()
+    ? `<div class="match-card"><div class="match-head"><div class="match-meta"><i class="ti ti-file-text"></i> Règlement du tournoi</div></div>
+        <div class="match-body" style="white-space:pre-wrap;font-size:13.5px;line-height:1.7">${escapeHtml(rulesText)}</div></div>`
+    : `<div class="empty"><i class="ti ti-file-text"></i>Aucun règlement n'a encore été publié</div>`;
+}
+function renderSnack(){
+  const enabled = !!window._settings?.snackEnabled;
+  document.getElementById('snackMainTab').style.display = enabled ? 'flex' : 'none';
+  if(!enabled) return;
+  const menuText = window._settings?.snackMenu || '';
+  const el = document.getElementById('snackSection');
+  el.innerHTML = menuText.trim()
+    ? `<div class="match-card"><div class="match-head"><div class="match-meta"><i class="ti ti-glass-cocktail"></i> Tarifs de la buvette</div></div>
+        <div class="match-body" style="white-space:pre-wrap;font-size:13.5px;line-height:1.7">${escapeHtml(menuText)}</div></div>`
+    : `<div class="empty"><i class="ti ti-glass-cocktail"></i>Aucun tarif n'a encore été publié</div>`;
+}
+window.switchMainTab = function(name, el){
+  document.querySelectorAll('.main-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+};
+
 window.setFilter = function(f, el){
   window._filter = f;
   document.querySelectorAll('#filterStrip .filter-chip').forEach(c=>c.classList.remove('active'));
@@ -243,9 +307,30 @@ window.setFilter = function(f, el){
   renderMatches();
 };
 
+window.setVenueFilter = function(v){
+  window._venueFilter = v;
+  renderMatches();
+};
+
+function populateVenueFilter(){
+  const sel = document.getElementById('venueFilter');
+  const current = window._venueFilter;
+  const venueNames = [...new Set(window._matches.map(m=>m.venue).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="all">🏟️ Tous les terrains</option>' +
+    venueNames.map(v => `<option value="${v}" ${v===current?'selected':''}>${v}</option>`).join('');
+  // Restore selection if it still exists in the list, otherwise fall back to "all"
+  if(current !== 'all' && !venueNames.includes(current)){
+    window._venueFilter = 'all';
+    sel.value = 'all';
+  }
+}
+
 function renderMatches(){
+  populateVenueFilter();
   const f = window._filter;
-  const list = f === 'all' ? window._matches : window._matches.filter(m => m.status === f);
+  const vf = window._venueFilter;
+  let list = f === 'all' ? window._matches : window._matches.filter(m => m.status === f);
+  if(vf !== 'all') list = list.filter(m => m.venue === vf);
   const grid = document.getElementById('matchesGrid');
 
   if(!list.length){
@@ -290,6 +375,15 @@ function renderMatches(){
           <span class="pts-badge ${ptsLabel(pts.B).cls}">${ptsLabel(pts.B).text}</span>
         </div>` : ''}
 
+        ${(isLive || isDone) ? `<div class="period-row">
+          <span class="edit-label"><i class="ti ti-clock-play"></i> Période</span>
+          <div class="period-stepper">
+            <button class="step-btn" onclick="bumpPeriod('${m.id}',-1)">−</button>
+            <span class="period-value">${m.period || 1} / ${m.maxPeriods || 4}</span>
+            <button class="step-btn plus" onclick="bumpPeriod('${m.id}',1)">+</button>
+          </div>
+        </div>` : ''}
+
         <div class="edit-row">
           <div class="edit-field">
             <label class="edit-label"><i class="ti ti-calendar-time"></i> Date et heure</label>
@@ -326,6 +420,20 @@ window.bumpScore = async function(id, field, delta){
   if(inputEl) inputEl.value = v;
   try{
     await updateDoc(doc(db,'matches',id), { [field]: v, updatedAt: serverTimestamp() });
+  }catch(e){
+    console.error(e);
+    toast('Erreur : accès refusé ou problème réseau', 'err');
+  }
+};
+
+window.bumpPeriod = async function(id, delta){
+  const m = window._matches.find(x=>x.id===id);
+  if(!m) return;
+  const maxP = m.maxPeriods || 4;
+  const current = parseInt(m.period) || 1;
+  const v = Math.max(1, Math.min(maxP, current + delta));
+  try{
+    await updateDoc(doc(db,'matches',id), { period: v, updatedAt: serverTimestamp() });
   }catch(e){
     console.error(e);
     toast('Erreur : accès refusé ou problème réseau', 'err');
@@ -392,6 +500,8 @@ onAuthStateChanged(auth, user => {
 onSnapshot(doc(db,'settings','tournament'), snap => {
   if(snap.exists()) window._settings = snap.data();
   renderMatches();
+  renderRules();
+  renderSnack();
 });
 onSnapshot(collection(db,'teams'), snap => {
   window._teams = snap.docs.map(d => ({ id: d.id, ...d.data() }));
