@@ -183,6 +183,8 @@
   <div class="tab" onclick="switchTab('schedule',this)"><i class="ti ti-calendar"></i>Planning</div>
   <div class="tab" onclick="switchTab('standings',this)"><i class="ti ti-list-numbers"></i>Classements</div>
   <div class="tab" onclick="switchTab('bracket',this)"><i class="ti ti-tournament"></i>Tableau</div>
+  <div class="tab" onclick="switchTab('rules',this)"><i class="ti ti-file-text"></i>Règlement</div>
+  <div class="tab" id="snackTab" style="display:none" onclick="switchTab('snack',this)"><i class="ti ti-glass-cocktail"></i>Buvette</div>
 </div>
 
 <!-- CONTENT -->
@@ -213,6 +215,20 @@
   <div class="page" id="tab-bracket">
     <div id="bracketSection">
       <div class="loading"><div class="spinner"></div>Chargement du tableau...</div>
+    </div>
+  </div>
+
+  <!-- RULES TAB -->
+  <div class="page" id="tab-rules">
+    <div id="rulesSection">
+      <div class="empty"><i class="ti ti-file-text"></i>Aucun règlement n'a encore été publié</div>
+    </div>
+  </div>
+
+  <!-- SNACK BAR TAB -->
+  <div class="page" id="tab-snack">
+    <div id="snackSection">
+      <div class="empty"><i class="ti ti-glass-cocktail"></i>Aucun tarif n'a encore été publié</div>
     </div>
   </div>
 
@@ -553,6 +569,39 @@ function renderBracket(){
   document.getElementById('bracketSection').innerHTML = html;
 }
 
+// ===== RULES TAB =====
+function renderRules(){
+  const rulesText = settings?.rules || '';
+  const el = document.getElementById('rulesSection');
+  if(!rulesText.trim()){
+    el.innerHTML = `<div class="empty"><i class="ti ti-file-text"></i>Aucun règlement n'a encore été publié</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="card"><div class="card-head"><h3><i class="ti ti-file-text"></i> Règlement du tournoi</h3></div>
+    <div class="card-body" style="white-space:pre-wrap;font-size:13.5px;line-height:1.7;color:var(--ink)">${escapeHtml(rulesText)}</div></div>`;
+}
+
+// ===== SNACK BAR TAB =====
+function renderSnack(){
+  const enabled = !!settings?.snackEnabled;
+  document.getElementById('snackTab').style.display = enabled ? 'flex' : 'none';
+  if(!enabled) return;
+  const menuText = settings?.snackMenu || '';
+  const el = document.getElementById('snackSection');
+  if(!menuText.trim()){
+    el.innerHTML = `<div class="empty"><i class="ti ti-glass-cocktail"></i>Aucun tarif n'a encore été publié</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="card"><div class="card-head"><h3><i class="ti ti-glass-cocktail"></i> Tarifs de la buvette</h3></div>
+    <div class="card-body" style="white-space:pre-wrap;font-size:13.5px;line-height:1.7;color:var(--ink)">${escapeHtml(menuText)}</div></div>`;
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 // ===== FIREBASE LISTENERS =====
 function updateTimestamp(){
   document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('fr-FR');
@@ -564,9 +613,9 @@ onSnapshot(doc(db,'settings','tournament'), snap=>{
     settings = snap.data();
     document.getElementById('tournamentTitle').textContent = settings.name||'Tournoi de Basketball';
     document.getElementById('tournamentSub').textContent = settings.subtitle||'';
-    const rules = SPORT_RULES[settings.sport] || SPORT_RULES.basketball;
-    document.getElementById('navIcon').textContent = rules.emoji;
-    renderStandings(); renderBracket();
+    const sportRules = SPORT_RULES[settings.sport] || SPORT_RULES.basketball;
+    document.getElementById('navIcon').textContent = sportRules.emoji;
+    renderStandings(); renderBracket(); renderRules(); renderSnack();
   }
 });
 
