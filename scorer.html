@@ -176,7 +176,7 @@
 
   <div class="main-tabs" id="mainTabs">
     <div class="main-tab active" onclick="switchMainTab('matches',this)"><i class="ti ti-ball-basketball"></i> Matchs</div>
-    <div class="main-tab" onclick="switchMainTab('chat',this)"><i class="ti ti-message-circle-2"></i> Chat <span class="chat-badge" id="chatBadge" style="display:none">●</span></div>
+    <div class="main-tab" id="chatMainTab" onclick="switchMainTab('chat',this)"><i class="ti ti-message-circle-2"></i> Chat <span class="chat-badge" id="chatBadge" style="display:none">●</span></div>
     <div class="main-tab" onclick="switchMainTab('rules',this)"><i class="ti ti-file-text"></i> Règlement</div>
     <div class="main-tab" id="snackMainTab" style="display:none" onclick="switchMainTab('snack',this)"><i class="ti ti-glass-cocktail"></i> Buvette</div>
   </div>
@@ -392,6 +392,10 @@ window.sendChatMessage = async function(){
   if(!text) return;
   if(!window._currentUserEmail){
     toast('Connexion requise pour envoyer un message', 'err');
+    return;
+  }
+  if(window._settings?.chatEnabled === false){
+    toast('Le chat est désactivé par l\'administrateur', 'err');
     return;
   }
   const btn = document.querySelector('.chat-send-btn');
@@ -630,6 +634,16 @@ onSnapshot(doc(db,'settings','tournament'), snap => {
   renderMatches();
   renderRules();
   renderSnack();
+  const chatEnabled = window._settings?.chatEnabled !== false;
+  document.getElementById('chatMainTab').style.display = chatEnabled ? 'flex' : 'none';
+  if(!chatEnabled){
+    // If the chat tab is currently open and gets disabled, fall back to the matches tab
+    const chatPageActive = document.getElementById('page-chat')?.classList.contains('active');
+    if(chatPageActive){
+      const matchesTabEl = document.querySelector('.main-tab[onclick*="\'matches\'"]');
+      if(matchesTabEl) window.switchMainTab('matches', matchesTabEl);
+    }
+  }
 });
 onSnapshot(collection(db,'teams'), snap => {
   window._teams = snap.docs.map(d => ({ id: d.id, ...d.data() }));
