@@ -54,6 +54,23 @@
     .main-tab.active{color:var(--orange);border-bottom-color:var(--orange)}
     .main-page{display:none}
     .main-page.active{display:block}
+    .chat-badge{color:var(--orange);font-size:8px;margin-left:2px;animation:blinkChat 1.2s infinite}
+    @keyframes blinkChat{0%,100%{opacity:1}50%{opacity:.2}}
+
+    .chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 180px);min-height:360px}
+    .chat-messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px 2px 12px}
+    .chat-msg{max-width:82%;padding:9px 13px;border-radius:13px;font-size:13.5px;line-height:1.45;position:relative}
+    .chat-msg.is-admin{background:var(--navy);color:#E8EAF2;align-self:flex-start;border-bottom-left-radius:4px}
+    .chat-msg.is-scorer{background:#fff;border:1px solid var(--line-light);align-self:flex-start;border-bottom-left-radius:4px}
+    .chat-msg.is-mine{background:var(--orange);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+    .chat-msg-author{font-size:10.5px;font-weight:700;opacity:.75;margin-bottom:3px;display:flex;align-items:center;gap:5px}
+    .chat-msg-time{font-size:10px;opacity:.6;margin-top:4px;text-align:right}
+    .chat-input-row{display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--line-light)}
+    .chat-input{flex:1;padding:11px 14px;border:1.5px solid var(--line-light);border-radius:24px;font-size:13.5px;font-family:inherit}
+    .chat-input:focus{outline:none;border-color:var(--orange)}
+    .chat-send-btn{width:42px;height:42px;border-radius:50%;background:var(--orange);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+    .chat-send-btn:hover{background:var(--orange-dim)}
+    .chat-send-btn:disabled{opacity:.5;cursor:not-allowed}
 
     .filter-strip{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
     .filter-chip{padding:6px 15px;border-radius:20px;border:1.5px solid var(--line-light);font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-soft);background:#fff;display:flex;align-items:center;gap:6px}
@@ -159,6 +176,7 @@
 
   <div class="main-tabs" id="mainTabs">
     <div class="main-tab active" onclick="switchMainTab('matches',this)"><i class="ti ti-ball-basketball"></i> Matchs</div>
+    <div class="main-tab" onclick="switchMainTab('chat',this)"><i class="ti ti-message-circle-2"></i> Chat <span class="chat-badge" id="chatBadge" style="display:none">●</span></div>
     <div class="main-tab" onclick="switchMainTab('rules',this)"><i class="ti ti-file-text"></i> Règlement</div>
     <div class="main-tab" id="snackMainTab" style="display:none" onclick="switchMainTab('snack',this)"><i class="ti ti-glass-cocktail"></i> Buvette</div>
   </div>
@@ -177,6 +195,16 @@
       <div id="matchesGrid"><div class="empty"><i class="ti ti-loader-2"></i> Chargement des matchs…</div></div>
     </div>
 
+    <div class="main-page" id="page-chat">
+      <div class="chat-wrap">
+        <div class="chat-messages" id="chatMessages"><div class="empty"><i class="ti ti-message-circle-2"></i>Aucun message pour le moment</div></div>
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Écrire un message..." maxlength="500">
+          <button class="chat-send-btn" onclick="sendChatMessage()"><i class="ti ti-send"></i></button>
+        </div>
+      </div>
+    </div>
+
     <div class="main-page" id="page-rules">
       <div id="rulesSection"><div class="empty"><i class="ti ti-file-text"></i>Aucun règlement n'a encore été publié</div></div>
     </div>
@@ -189,7 +217,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, updateDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, updateDoc, doc, serverTimestamp, addDoc, query, orderBy, limit, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -298,7 +326,95 @@ window.switchMainTab = function(name, el){
   document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   el.classList.add('active');
+  if(name === 'chat'){
+    document.getElementById('chatBadge').style.display = 'none';
+    window._chatHasUnread = false;
+    scrollChatToBottom();
+  }
 };
+
+// ===== CHAT =====
+window._chatMessages = [];
+window._chatInitialized = false;
+window._chatHasUnread = false;
+
+function initChatListener(){
+  if(window._chatInitialized) return;
+  window._chatInitialized = true;
+  const chatQuery = query(collection(db,'chat_messages'), orderBy('createdAt','asc'), limit(200));
+  onSnapshot(chatQuery, snap => {
+    window._chatMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderChat();
+    const chatPageActive = document.getElementById('page-chat')?.classList.contains('active');
+    if(!chatPageActive && window._chatMessages.length){
+      window._chatHasUnread = true;
+      document.getElementById('chatBadge').style.display = 'inline';
+    }
+  }, err => {
+    console.error('Chat listener error', err);
+  });
+}
+
+function fmtChatTime(ts){
+  if(!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+}
+
+function renderChat(){
+  const el = document.getElementById('chatMessages');
+  if(!window._chatMessages.length){
+    el.innerHTML = '<div class="empty"><i class="ti ti-message-circle-2"></i>Aucun message pour le moment</div>';
+    return;
+  }
+  const myEmail = window._currentUserEmail;
+  el.innerHTML = window._chatMessages.map(m => {
+    const isMine = m.authorEmail === myEmail;
+    const roleCls = isMine ? 'is-mine' : (m.authorRole === 'admin' ? 'is-admin' : 'is-scorer');
+    const roleIcon = m.authorRole === 'admin' ? '<i class="ti ti-shield-star"></i>' : '<i class="ti ti-user"></i>';
+    return `<div class="chat-msg ${roleCls}">
+      ${!isMine ? `<div class="chat-msg-author">${roleIcon} ${escapeHtml(m.authorEmail||'?')}</div>` : ''}
+      <div>${escapeHtml(m.text||'')}</div>
+      <div class="chat-msg-time">${fmtChatTime(m.createdAt)}</div>
+    </div>`;
+  }).join('');
+  scrollChatToBottom();
+}
+
+function scrollChatToBottom(){
+  const el = document.getElementById('chatMessages');
+  if(el) el.scrollTop = el.scrollHeight;
+}
+
+window.sendChatMessage = async function(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  if(!window._currentUserEmail){
+    toast('Connexion requise pour envoyer un message', 'err');
+    return;
+  }
+  const btn = document.querySelector('.chat-send-btn');
+  btn.disabled = true;
+  try{
+    await addDoc(collection(db,'chat_messages'), {
+      text,
+      authorEmail: window._currentUserEmail,
+      authorRole: window._currentUserRole,
+      createdAt: serverTimestamp(),
+    });
+    input.value = '';
+  }catch(e){
+    console.error(e);
+    toast('Erreur : message non envoyé', 'err');
+  }finally{
+    btn.disabled = false;
+    input.focus();
+  }
+};
+document.getElementById('chatInput')?.addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); window.sendChatMessage(); }
+});
 
 window.setFilter = function(f, el){
   window._filter = f;
@@ -486,11 +602,23 @@ window.setStatus = async function(id, status){
 window.firebaseLogin = (email, password) => signInWithEmailAndPassword(auth, email, password);
 window.firebaseLogout = () => signOut(auth);
 
-onAuthStateChanged(auth, user => {
+window._currentUserRole = 'scorer';
+window._currentUserEmail = null;
+
+onAuthStateChanged(auth, async user => {
   if(user){
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
     document.getElementById('userLabel').textContent = user.email || 'Scoreur';
+    window._currentUserEmail = user.email || null;
+    try{
+      const roleSnap = await getDoc(doc(db,'roles',user.uid));
+      window._currentUserRole = (roleSnap.exists() && roleSnap.data().role === 'scorer') ? 'scorer' : 'admin';
+    }catch(e){
+      console.warn('Role check failed', e);
+      window._currentUserRole = 'scorer';
+    }
+    initChatListener();
   } else {
     document.getElementById('loginScreen').style.display = 'flex';
     document.getElementById('mainApp').style.display = 'none';
