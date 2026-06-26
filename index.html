@@ -75,8 +75,22 @@
     .score-line{display:flex;align-items:center;justify-content:space-between;padding:7px 0}
     .score-team{display:flex;align-items:center;gap:9px;flex:1;font-size:13.5px;font-weight:600;color:var(--ink)}
     .live-card .score-team{color:#E8EAF2}
-    .score-num{font-family:var(--display);font-size:26px;font-weight:600;min-width:34px;text-align:right;font-variant-numeric:tabular-nums;letter-spacing:.01em;color:var(--ink)}
+    .score-num{font-family:var(--display);font-size:26px;font-weight:600;min-width:34px;text-align:right;font-variant-numeric:tabular-nums;letter-spacing:.01em;color:var(--ink);display:inline-block;transition:color .3s}
     .live-card .score-num{color:var(--gold);text-shadow:0 0 14px rgba(255,210,63,.35)}
+    .score-num.score-pulse{animation:scorePulse .55s cubic-bezier(.34,1.56,.64,1)}
+    @keyframes scorePulse{
+      0%{transform:scale(1)}
+      35%{transform:scale(1.55)}
+      100%{transform:scale(1)}
+    }
+    .trophy-icon{font-size:13px;margin-right:2px;display:inline-block;animation:trophyPop .5s ease-out}
+    @keyframes trophyPop{
+      0%{transform:scale(0) rotate(-15deg);opacity:0}
+      60%{transform:scale(1.3) rotate(8deg);opacity:1}
+      100%{transform:scale(1) rotate(0);opacity:1}
+    }
+    .score-team.is-winner{position:relative}
+    .score-num.is-winner-score{text-shadow:0 0 1px rgba(15,139,83,.3)}
     .score-vs{text-align:center;font-size:10px;color:#B7BECF;padding:1px 0;letter-spacing:.1em;font-weight:600}
     .match-card:not(.live-card) .score-vs{color:#C7C2B2}
     .team-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
@@ -102,6 +116,31 @@
     .rank-1{font-family:var(--display);font-weight:600;color:var(--orange-dim)}
 
     /* BRACKET */
+    /* BRACKET — visual tournament diagram */
+    .bracket-diagram{display:flex;gap:0;overflow-x:auto;padding:8px 4px 20px;align-items:stretch}
+    .bracket-col{display:flex;flex-direction:column;justify-content:center;min-width:240px;flex-shrink:0;position:relative}
+    .bracket-col-title{font-family:var(--display);font-size:11px;font-weight:600;color:var(--ink-soft);letter-spacing:.1em;text-transform:uppercase;text-align:center;margin-bottom:14px}
+    .bracket-col-matches{display:flex;flex-direction:column;justify-content:center;flex:1;gap:0}
+    .bm-slot{position:relative;display:flex;align-items:center;padding:6px 18px}
+    .bm-slot::before, .bm-slot::after{content:'';position:absolute;right:0;width:18px;border-top:2px solid var(--line-light)}
+    .bm-slot.connect-down::after{border-color:var(--line-light);height:50%;top:50%;border-right:2px solid var(--line-light);border-top:none}
+    .bm-slot.connect-up::after{border-color:var(--line-light);height:50%;bottom:50%;border-right:2px solid var(--line-light);border-top:none}
+    .bracket-col:last-child .bm-slot::before{display:none}
+    .bm{background:#fff;border:1px solid var(--line-light);border-radius:11px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;width:100%;transition:box-shadow .15s,transform .15s}
+    .bm:hover{box-shadow:0 6px 18px rgba(19,24,42,.1);transform:translateY(-1px)}
+    .bm.bm-live{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange)}
+    .bm.bm-done{border-color:#A8E0C2}
+    .bm-team-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:3px 0}
+    .bm-team{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--ink-soft);flex:1;min-width:0}
+    .bm-team span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bm-team.winner{color:var(--ink)}
+    .bm-team.winner::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--live);margin-left:4px;flex-shrink:0}
+    .bm-score-val{font-family:var(--display);font-size:17px;font-weight:600;color:var(--ink-soft);min-width:22px;text-align:right;font-variant-numeric:tabular-nums}
+    .bm-team.winner ~ .bm-score-val, .bm-score-val.win{color:var(--ink)}
+    .bm-divider{height:1px;background:var(--line-light);margin:1px 0}
+    .bm-foot{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:var(--ink-soft);margin-top:2px}
+    .bm-pending-label{font-size:11px;color:#C7C2B2;font-style:italic}
+
     .bracket-phase{margin-bottom:26px}
     .bracket-phase h4{font-family:var(--display);font-size:11.5px;font-weight:600;color:var(--ink-soft);letter-spacing:.1em;margin-bottom:13px;text-transform:uppercase}
     .bracket-matches{display:flex;flex-direction:column;gap:9px}
@@ -275,6 +314,26 @@ function fmtDate(ts){
   return d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
 }
 function teamName(id){ return teams.find(t=>t.id===id)?.name || id }
+
+// Tracks previous score values per match/side so we only animate cells whose value actually changed,
+// rather than re-triggering the pulse on every re-render (which would look broken/constant).
+window._prevScores = window._prevScores || {};
+function animateChangedScores(){
+  document.querySelectorAll('[data-score-cell]').forEach(el => {
+    const matchId = el.dataset.matchId;
+    const side = el.dataset.side;
+    const key = matchId + '-' + side;
+    const currentValue = el.textContent.trim();
+    const prevValue = window._prevScores[key];
+    if(prevValue !== undefined && prevValue !== currentValue){
+      el.classList.remove('score-pulse');
+      // Force reflow so the animation can restart even if the class was already removed this tick
+      void el.offsetWidth;
+      el.classList.add('score-pulse');
+    }
+    window._prevScores[key] = currentValue;
+  });
+}
 function teamColor(id){ return teams.find(t=>t.id===id)?.color || '#999' }
 function groupName(id){ return groups.find(g=>g.id===id)?.name || id }
 const SPORT_RULES = {
@@ -337,12 +396,12 @@ function renderLive(){
         <div class="match-card-body">
           <div class="score-line">
             <div class="score-team">${teamLogo(m.teamA)}${teamName(m.teamA)}</div>
-            <div class="score-num">${m.scoreA||0}</div>
+            <div class="score-num" data-score-cell data-match-id="${m.id}" data-side="A">${m.scoreA||0}</div>
           </div>
           <div class="score-vs">VS</div>
           <div class="score-line">
             <div class="score-team">${teamLogo(m.teamB)}${teamName(m.teamB)}</div>
-            <div class="score-num">${m.scoreB||0}</div>
+            <div class="score-num" data-score-cell data-match-id="${m.id}" data-side="B">${m.scoreB||0}</div>
           </div>
         </div>
         <div class="match-card-foot">
@@ -387,13 +446,13 @@ function renderLive(){
         </div>
         <div class="match-card-body">
           <div class="score-line">
-            <div class="score-team" style="${wa?'font-weight:700;color:#0F8B53':''}">${teamLogo(m.teamA)}${teamName(m.teamA)}</div>
-            <div class="score-num" style="${wa?'color:#0F8B53':''}">${m.scoreA||0}</div>
+            <div class="score-team ${wa?'is-winner':''}" style="${wa?'font-weight:700;color:#0F8B53':''}">${wa?'<span class=\"trophy-icon\">🏆</span>':''}${teamLogo(m.teamA)}${teamName(m.teamA)}</div>
+            <div class="score-num ${wa?'is-winner-score':''}" style="${wa?'color:#0F8B53':''}" data-score-cell data-match-id="${m.id}" data-side="A">${m.scoreA||0}</div>
           </div>
           <div class="score-vs">VS</div>
           <div class="score-line">
-            <div class="score-team" style="${wb?'font-weight:700;color:#0F8B53':''}">${teamLogo(m.teamB)}${teamName(m.teamB)}</div>
-            <div class="score-num" style="${wb?'color:#0F8B53':''}">${m.scoreB||0}</div>
+            <div class="score-team ${wb?'is-winner':''}" style="${wb?'font-weight:700;color:#0F8B53':''}">${wb?'<span class=\"trophy-icon\">🏆</span>':''}${teamLogo(m.teamB)}${teamName(m.teamB)}</div>
+            <div class="score-num ${wb?'is-winner-score':''}" style="${wb?'color:#0F8B53':''}" data-score-cell data-match-id="${m.id}" data-side="B">${m.scoreB||0}</div>
           </div>
         </div>
         <div class="match-card-foot"><span>${m.group ? 'Groupe ' + groupName(m.group) : m.round||''}</span><span></span></div>
@@ -407,6 +466,7 @@ function renderLive(){
   }
 
   document.getElementById('liveSection').innerHTML = html;
+  animateChangedScores();
 }
 
 // ===== SCHEDULE TAB =====
@@ -491,17 +551,7 @@ function renderStandings(){
 
 // ===== BRACKET TAB =====
 function renderBracket(){
-  const phases = ['Quarts de finale','Demi-finales','Finale','Petite finale'];
-  const phaseMatches = {};
-  phases.forEach(p=>phaseMatches[p]=[]);
-  const knockout = matches.filter(m=>m.phase==='knockout'||m.round);
-  knockout.forEach(m=>{
-    const key = m.round||'Finale';
-    if(!phaseMatches[key]) phaseMatches[key]=[];
-    phaseMatches[key].push(m);
-  });
-
-  const grouped = matches.filter(m=>m.group);
+  const knockout = matches.filter(m=>m.round);
   const groupPhaseMatches = matches.filter(m=>m.group);
 
   let html = '';
@@ -531,32 +581,45 @@ function renderBracket(){
     </div>`;
   }
 
-  // Knockout bracket
-  const knockoutPhases = [...new Set(knockout.map(m=>m.round))].filter(Boolean);
-  if(knockoutPhases.length){
-    const phaseOrder = ['Quarts de finale','Demi-finales','Petite finale','Finale'];
-    const sortedPhases = knockoutPhases.sort((a,b)=>{
-      const ia=phaseOrder.indexOf(a), ib=phaseOrder.indexOf(b);
-      return (ia===-1?99:ia)-(ib===-1?99:ib);
-    });
-    sortedPhases.forEach(phase=>{
-      html += `<div class="bracket-phase"><h4>${phase}</h4><div class="bracket-matches">`;
-      phaseMatches[phase].forEach(m=>{
+  // Knockout bracket — auto-organized into columns based on round size (fewer matches = later round)
+  if(knockout.length){
+    const phaseNames = [...new Set(knockout.map(m=>m.round))];
+    // Sort phases by number of matches descending (more matches = earlier round, e.g. quarter-finals before finals).
+    // This makes the diagram self-organize correctly even with custom phase names.
+    const phaseGroups = phaseNames.map(name => ({
+      name,
+      matches: knockout.filter(m=>m.round===name),
+    }));
+    phaseGroups.sort((a,b) => b.matches.length - a.matches.length);
+
+    html += `<div class="bracket-diagram">`;
+    phaseGroups.forEach((phase, colIdx) => {
+      html += `<div class="bracket-col"><div class="bracket-col-title">${phase.name}</div><div class="bracket-col-matches">`;
+      phase.matches.forEach((m, i) => {
         const scoreA = m.scoreA||0, scoreB = m.scoreB||0;
         const isDone = m.status==='done';
         const isLive = m.status==='live';
         const wA = isDone&&scoreA>scoreB, wB = isDone&&scoreB>scoreA;
-        html += `<div class="bm ${isLive?'bm-live':''} ${isDone?'bm-done':''}">
-          <div class="bm-teams">
-            <div class="bm-team ${wA?'winner':''}">${teamLogo(m.teamA)}${teamName(m.teamA)||'À déterminer'}</div>
-            <div class="bm-team ${wB?'winner':''}">${teamLogo(m.teamB)}${teamName(m.teamB)||'À déterminer'}</div>
-          </div>
-          ${isDone||isLive?`<div class="bm-score">${scoreA}<br>${scoreB}</div>`:''}
-          <div class="bm-info">${m.venue||''}<br>${statusBadge(m.status)}</div>
-        </div>`;
+        const hasTeams = m.teamA && m.teamB;
+        const slotClass = colIdx < phaseGroups.length-1 ? (i%2===0?'connect-down':'connect-up') : '';
+        html += `<div class="bm-slot ${slotClass}"><div class="bm ${isLive?'bm-live':''} ${isDone?'bm-done':''}">
+          ${hasTeams ? `
+            <div class="bm-team-row">
+              <div class="bm-team ${wA?'winner':''}">${teamLogo(m.teamA)}<span>${teamName(m.teamA)}</span></div>
+              ${(isDone||isLive) ? `<div class="bm-score-val ${wA?'win':''}" data-score-cell data-match-id="${m.id}" data-side="A">${scoreA}</div>` : ''}
+            </div>
+            <div class="bm-divider"></div>
+            <div class="bm-team-row">
+              <div class="bm-team ${wB?'winner':''}">${teamLogo(m.teamB)}<span>${teamName(m.teamB)}</span></div>
+              ${(isDone||isLive) ? `<div class="bm-score-val ${wB?'win':''}" data-score-cell data-match-id="${m.id}" data-side="B">${scoreB}</div>` : ''}
+            </div>
+          ` : `<div class="bm-pending-label"><i class="ti ti-help-circle"></i> Équipes à déterminer</div>`}
+          <div class="bm-foot"><span>${m.venue||''}</span>${statusBadge(m.status)}</div>
+        </div></div>`;
       });
       html += '</div></div>';
     });
+    html += `</div>`;
   } else if(!groupPhaseMatches.length){
     html = `<div class="empty"><i class="ti ti-tournament"></i>Le tableau n'est pas encore disponible</div>`;
   } else {
@@ -567,6 +630,7 @@ function renderBracket(){
   }
 
   document.getElementById('bracketSection').innerHTML = html;
+  animateChangedScores();
 }
 
 // ===== RULES TAB =====
