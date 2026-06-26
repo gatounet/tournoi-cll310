@@ -59,8 +59,10 @@
     .btn-sm{padding:4px 10px;font-size:12px}
     .icon-btn{width:30px;height:30px;border-radius:7px;border:0.5px solid #ddd;background:white;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#666;font-size:14px;transition:all .15s}
     .icon-btn:hover{background:#f0f0f0;color:#185FA5;border-color:#185FA5}
-    .icon-btn.danger:hover{background:#fde8e8;color:#c0392b;border-color:#f5b7b7}
-    .icon-btn.success:hover{background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7}
+    .icon-btn.success{background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7}
+    .icon-btn.success:hover{background:#d2ecd6;color:#1b5e20;border-color:#7fcb8d}
+    .icon-btn.danger{background:#fde8e8;color:#c0392b;border-color:#f5b7b7}
+    .icon-btn.danger:hover{background:#fad0d0;color:#a02a20;border-color:#ef9a9a}
     .card{background:white;border:0.5px solid #ddd;border-radius:8px;margin-bottom:16px}
     .card-body{padding:16px 20px}
     .card-head{padding:14px 20px;border-bottom:0.5px solid #ddd;display:flex;align-items:center;justify-content:space-between}
@@ -814,8 +816,8 @@ function renderTeams(){
     <td><strong>${stats[t.id]?.pts||0}</strong></td>
     <td><span class="badge badge-green"><i class="ti ti-circle-check"></i>Actif</span></td>
     <td><div style="display:flex;gap:4px">
-      <button class="icon-btn success" onclick="openEditTeam('${t.id}')" title="Modifier"><i class="ti ti-edit"></i></button>
-      <button class="icon-btn danger" onclick="deleteItem('teams','${t.id}','équipe')" title="Supprimer"><i class="ti ti-trash"></i></button>
+      <button class="icon-btn success" onclick="openEditTeam('${t.id}')" title="Modifier"><i class="ti ti-settings"></i></button>
+      <button class="icon-btn danger" onclick="deleteItem('teams','${t.id}','équipe')" title="Supprimer"><i class="ti ti-x"></i></button>
     </div></td></tr>`).join('')||'<tr><td colspan="8" style="text-align:center;color:#bbb;padding:20px">Aucune équipe</td></tr>';
 }
 
@@ -835,8 +837,8 @@ function renderGroups(){
     const rows=Object.values(stats).sort((a,b)=>b.pts-a.pts||(b.pf-b.pa)-(a.pf-a.pa));
     return `<div class="card"><div class="card-head"><h3><i class="ti ti-layers-difference" style="color:#185FA5"></i> Groupe ${g.name||g.id}</h3>
       <div style="display:flex;gap:6px">
-        <button class="icon-btn success" onclick="openEditGroup('${g.id}')" title="Modifier"><i class="ti ti-edit"></i></button>
-        <button class="icon-btn danger" onclick="deleteItem('groups','${g.id}','groupe')" title="Supprimer"><i class="ti ti-trash"></i></button>
+        <button class="icon-btn success" onclick="openEditGroup('${g.id}')" title="Modifier"><i class="ti ti-settings"></i></button>
+        <button class="icon-btn danger" onclick="deleteItem('groups','${g.id}','groupe')" title="Supprimer"><i class="ti ti-x"></i></button>
       </div></div>
       <table><thead><tr><th>#</th><th>Équipe</th><th>J</th><th>V</th><th>N</th><th>D</th><th>Pts</th><th>+/-</th></tr></thead>
       <tbody>${rows.map((r,i)=>{const diff=r.pf-r.pa;return`<tr>
@@ -862,8 +864,8 @@ function renderGrounds(){
       <div><div style="font-size:13px;font-weight:600">${g.name}</div><div style="font-size:12px;color:#999;display:flex;gap:8px;margin-top:2px">${g.capacity?`<span><i class="ti ti-users" style="font-size:10px"></i> ${g.capacity}</span>`:''} ${g.location?`<span><i class="ti ti-location" style="font-size:10px"></i> ${g.location}</span>`:''}</div></div>
       <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
         ${active?'<span class="badge badge-red"><i class="ti ti-live-view"></i>Match en cours</span>':'<span class="badge badge-green"><i class="ti ti-check"></i>Disponible</span>'}
-        <button class="icon-btn success" onclick="openEditGround('${g.id}')" title="Modifier"><i class="ti ti-edit"></i></button>
-        <button class="icon-btn danger" onclick="deleteItem('grounds','${g.id}','terrain')" title="Supprimer"><i class="ti ti-trash"></i></button>
+        <button class="icon-btn success" onclick="openEditGround('${g.id}')" title="Modifier"><i class="ti ti-settings"></i></button>
+        <button class="icon-btn danger" onclick="deleteItem('grounds','${g.id}','terrain')" title="Supprimer"><i class="ti ti-x"></i></button>
       </div></div>`;
   }).join('');
 }
@@ -887,8 +889,8 @@ function renderMatches(){
       <td>${grpLabel}</td>
       <td>${statusBadge(m.status)}</td>
       <td><div style="display:flex;gap:4px">
-        <button class="icon-btn success" onclick="openEditMatch('${m.id}')" title="Modifier"><i class="ti ti-edit"></i></button>
-        <button class="icon-btn danger" onclick="deleteItem('matches','${m.id}','match')" title="Supprimer"><i class="ti ti-trash"></i></button>
+        <button class="icon-btn success" onclick="openEditMatch('${m.id}')" title="Modifier"><i class="ti ti-settings"></i></button>
+        <button class="icon-btn danger" onclick="deleteItem('matches','${m.id}','match')" title="Supprimer"><i class="ti ti-x"></i></button>
       </div></td></tr>`;
   }).join('')||'<tr><td colspan="9" style="text-align:center;color:#bbb;padding:20px">Aucun match</td></tr>';
 }
@@ -1042,7 +1044,7 @@ function renderBracketAdmin(){
           <div style="flex:1;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px">${teamLogo(m.teamA)}${teamName(m.teamA)||'À déterminer'} <span style="color:#bbb">vs</span> ${teamLogo(m.teamB)}${teamName(m.teamB)||'À déterminer'}</div>
           ${isDone||isLive?`<span style="font-size:16px;font-weight:700">${m.scoreA||0}–${m.scoreB||0}</span>`:''}
           ${statusBadge(m.status)}
-          <button class="icon-btn success" onclick="openEditMatch('${m.id}')" title="Modifier"><i class="ti ti-edit"></i></button>
+          <button class="icon-btn success" onclick="openEditMatch('${m.id}')" title="Modifier"><i class="ti ti-settings"></i></button>
         </div>`;
       });html+=`</div>`;
     });html+=`</div></div>`;
