@@ -186,6 +186,27 @@
 
     /* FOOTER */
     footer{text-align:center;padding:28px;font-size:11.5px;color:#B7BECF;font-weight:500}
+    footer a:hover{text-decoration:underline}
+
+    /* MODAL — scorer access request */
+    .modal-overlay{position:fixed;inset:0;background:rgba(11,18,32,.6);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px);padding:16px}
+    .modal-overlay.show{display:flex}
+    .modal{background:#fff;border-radius:16px;width:420px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(11,18,32,.3)}
+    .modal-head{padding:18px 20px;border-bottom:1px solid var(--line-light);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0}
+    .modal-head h3{font-family:var(--display);font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;color:var(--ink)}
+    .close-btn{width:30px;height:30px;border-radius:8px;border:1.5px solid var(--line-light);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-soft)}
+    .close-btn:hover{background:#fde8e8;color:#c0392b;border-color:#f5b7b7}
+    .modal-body{padding:20px}
+    .modal-foot{padding:14px 20px;border-top:1px solid var(--line-light);display:flex;justify-content:flex-end;gap:8px;background:#FBFAF7;border-radius:0 0 16px 16px}
+    .form-row{margin-bottom:14px}
+    .form-label{font-size:12px;color:var(--ink-soft);display:block;margin-bottom:5px;font-weight:600}
+    .form-input{width:100%;padding:9px 12px;border:1.5px solid var(--line-light);border-radius:8px;font-family:inherit;font-size:13.5px;color:var(--ink)}
+    .form-input:focus{outline:none;border-color:var(--orange)}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:9px;border:1.5px solid var(--line-light);background:#fff;font-size:13px;cursor:pointer;color:var(--ink);font-family:inherit;font-weight:600}
+    .btn:hover{background:#FBFAF7;border-color:#C7C2B2}
+    .btn-primary{background:var(--orange);color:#fff;border-color:var(--orange)}
+    .btn-primary:hover{background:var(--orange-dim)}
+    .btn-primary:disabled{opacity:.6;cursor:not-allowed}
 
     @media(max-width:600px){
       .live-grid{grid-template-columns:1fr}
@@ -273,12 +294,38 @@
 
 </div>
 
-<footer>Mis à jour en temps réel · <span id="lastUpdate">—</span><br><span style="opacity:.6;font-size:11px">Créé par le Club de Basket de Lormont · CLL310</span></footer>
+<footer>Mis à jour en temps réel · <span id="lastUpdate">—</span><br>
+  <a href="#" onclick="openScorerRequestModal();return false;" style="color:var(--orange-dim);text-decoration:none;font-weight:600">
+    <i class="ti ti-user-plus" style="font-size:12px"></i> Devenir scoreur pour ce tournoi
+  </a><br>
+  <span style="opacity:.6;font-size:11px">Créé par le Club de Basket de Lormont · CLL310</span>
+</footer>
+
+<!-- SCORER ACCESS REQUEST MODAL -->
+<div class="modal-overlay" id="scorerReqModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3><i class="ti ti-user-plus"></i> Devenir scoreur</h3>
+      <button class="close-btn" onclick="closeScorerRequestModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="scorerReqBody">
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px">Remplis ce formulaire pour demander un accès scoreur. L'administrateur du tournoi créera ton compte et te recontactera par email.</p>
+      <div class="form-row"><label class="form-label">Nom et prénom *</label><input class="form-input" id="reqName" placeholder="ex: Marie Dupont"></div>
+      <div class="form-row"><label class="form-label">Adresse email *</label><input class="form-input" id="reqEmail" type="email" placeholder="ex: marie.dupont@email.com"></div>
+      <div class="form-row"><label class="form-label">Message (optionnel)</label><textarea class="form-input" id="reqMessage" rows="3" placeholder="ex: Disponible samedi après-midi sur le terrain B"></textarea></div>
+      <div class="form-row" id="scorerReqError" style="display:none;color:#c0392b;font-size:12px"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeScorerRequestModal()">Annuler</button>
+      <button class="btn btn-primary" id="scorerReqSubmitBtn" onclick="submitScorerRequest()"><i class="ti ti-send"></i> Envoyer la demande</button>
+    </div>
+  </div>
+</div>
 
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ⚠️ REMPLACE CES VALEURS PAR TA CONFIG FIREBASE
 const firebaseConfig = {
@@ -293,6 +340,62 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// ===== SCORER ACCESS REQUEST =====
+window.openScorerRequestModal = function(){
+  document.getElementById('reqName').value = '';
+  document.getElementById('reqEmail').value = '';
+  document.getElementById('reqMessage').value = '';
+  document.getElementById('scorerReqError').style.display = 'none';
+  document.getElementById('scorerReqModal').classList.add('show');
+};
+window.closeScorerRequestModal = function(){
+  document.getElementById('scorerReqModal').classList.remove('show');
+};
+window.submitScorerRequest = async function(){
+  const name = document.getElementById('reqName').value.trim();
+  const email = document.getElementById('reqEmail').value.trim();
+  const message = document.getElementById('reqMessage').value.trim();
+  const errEl = document.getElementById('scorerReqError');
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if(!name || !email){
+    errEl.textContent = 'Le nom et l\'email sont obligatoires.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if(!emailRegex.test(email)){
+    errEl.textContent = 'Merci de saisir une adresse email valide.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  const btn = document.getElementById('scorerReqSubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2"></i> Envoi...';
+  try{
+    await addDoc(collection(db,'scorer_requests'), {
+      name, email, message,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+    });
+    document.getElementById('scorerReqBody').innerHTML = `
+      <div style="text-align:center;padding:20px 0">
+        <i class="ti ti-circle-check" style="font-size:40px;color:var(--live);display:block;margin-bottom:12px"></i>
+        <p style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:6px">Demande envoyée !</p>
+        <p style="font-size:13px;color:var(--ink-soft)">L'administrateur du tournoi va examiner ta demande et te contactera par email pour créer ton compte scoreur.</p>
+      </div>`;
+    document.querySelector('#scorerReqModal .modal-foot').innerHTML =
+      `<button class="btn btn-primary" onclick="closeScorerRequestModal()">Fermer</button>`;
+  }catch(e){
+    console.error(e);
+    errEl.textContent = 'Une erreur est survenue, merci de réessayer.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-send"></i> Envoyer la demande';
+  }
+};
 
 // ===== STATE =====
 let teams = [], matches = [], groups = [], settings = {};
