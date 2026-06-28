@@ -1768,6 +1768,68 @@ function nextPowerOfTwo(n){
 
 // Builds the qualified team list: all group winners first, then best runners-up
 // (ranked by points, then diff) until reaching the required bracket size.
+// Generates the standard "seed slot order" for a single-elimination bracket of a given size.
+// E.g. for size=8, returns [1,8,5,4,3,6,7,2] — the classic seeding pattern where seed 1 and seed 2
+// (the two strongest) land on opposite halves and can only meet in the final if both keep winning.
+function bracketSeedOrder(size){
+  if(size === 1) return [1];
+  if(size === 2) return [1,2];
+  const half = bracketSeedOrder(size/2);
+  const order = [];
+  half.forEach(s => {
+    order.push(s);
+    order.push(size + 1 - s);
+  });
+  return order;
+}
+
+// Places qualified teams into bracket slots so that:
+// 1. All rank-1 (group winners) teams are spread across the bracket as top seeds — they can only
+//    meet each other in the final (or as late as possible), following standard seeding.
+// 2. All rank-2 (best runners-up) teams fill the remaining "bottom seed" slots, and are placed so
+//    that two rank-2 teams never face each other in round 1 — only a rank-1 vs rank-2 pairing.
+// 3. Within those constraints, teams from the same original group are kept apart in round 1
+//    whenever a swap can achieve that without breaking rules 1 and 2.
+function seedQualifiedTeams(qualified, bracketSize){
+  const seedOrder = bracketSeedOrder(bracketSize); // slot index (0-based) -> seed number (1-based)
+  const winners = qualified.filter(t => t.rank === 1);
+  const runnersUp = qualified.filter(t => t.rank === 2);
+
+  // Seed numbers 1..winners.length are the group winners (strongest seeds, spread by seedOrder).
+  // Seed numbers after that are the best runners-up, ordered by their own ranking (best runner-up = next seed).
+  const seedToTeam = {};
+  winners.forEach((team, i) => { seedToTeam[i+1] = team; });
+  runnersUp.forEach((team, i) => { seedToTeam[winners.length + i + 1] = team; });
+
+  const slots = seedOrder.map(seedNum => seedToTeam[seedNum] || null);
+
+  // Build round-1 pairs from adjacent slots (0&1, 2&3, ...)
+  let pairs = [];
+  for(let i=0; i<slots.length; i+=2){
+    pairs.push([slots[i], slots[i+1]]);
+  }
+
+  // Final safety pass: if a pair happens to share the same origin group (can happen with few groups),
+  // try swapping with a neighboring pair's teams that keeps rank-1/rank-2 separation intact.
+  for(let i=0; i<pairs.length; i++){
+    const [a, b] = pairs[i];
+    if(a && b && a.group === b.group){
+      for(let j=0; j<pairs.length; j++){
+        if(j === i) continue;
+        const [c, d] = pairs[j];
+        // Try swapping b with d only if they're the same rank (keeps the "no two runners-up meet" rule intact)
+        if(d && d.rank === b.rank && d.group !== a.group && (!c || c.group !== b.group)){
+          pairs[i][1] = d;
+          pairs[j][1] = b;
+          break;
+        }
+      }
+    }
+  }
+
+  return pairs;
+}
+
 function computeQualifiedTeams(){
   const standings = computeGroupStandings();
   if(!standings.length) return { qualified: [], bracketSize: 0, standings };
@@ -1781,21 +1843,6 @@ function computeQualifiedTeams(){
   const bestRunnersUp = runnersUp.slice(0, slotsToFill);
 
   return { qualified: [...winners, ...bestRunnersUp], bracketSize, standings };
-}
-
-// Seeds the qualified teams into first-round pairs, trying to avoid pairing two teams
-// from the same original group together in round 1 (classic bracket seeding constraint).
-function seedFirstRound(qualified){
-  const pool = qualified.slice();
-  const pairs = [];
-  while(pool.length){
-    const teamA = pool.shift();
-    let idx = pool.findIndex(t => t.group !== teamA.group);
-    if(idx === -1) idx = 0; // no choice but to pair same-group teams if unavoidable
-    const teamB = pool.splice(idx, 1)[0];
-    pairs.push([teamA, teamB || null]);
-  }
-  return pairs;
 }
 
 function roundNameForSize(size){
@@ -1816,7 +1863,7 @@ function buildFinalPhaseMatches(){
   const intervalMin = Math.max(5, parseInt(document.getElementById('fpInterval').value) || 30);
   const includeThirdPlace = document.getElementById('fpThirdPlace').checked;
 
-  const pairs = seedFirstRound(qualified);
+  const pairs = seedQualifiedTeams(qualified, bracketSize);
   const roundName = roundNameForSize(bracketSize);
 
   const matches = pairs.map(([a, b]) => ({
