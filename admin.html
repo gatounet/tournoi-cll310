@@ -302,6 +302,7 @@
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-primary" onclick="openModal('match')"><i class="ti ti-plus"></i>Ajouter un match</button>
             <button class="btn btn-success" onclick="openGenerateModal()"><i class="ti ti-wand"></i>Générer des matchs</button>
+            <button class="btn" style="background:#f3e5f5;color:#7b1fa2;border-color:#e1bee7" onclick="openFinalPhaseModal()"><i class="ti ti-trophy"></i>Générer la phase finale</button>
           </div>
         </div>
         <div class="phase-strip" id="matchPhaseStrip">
@@ -535,6 +536,53 @@
       <button class="btn" onclick="closeGenModal()"><i class="ti ti-x"></i>Annuler</button>
       <button class="btn" onclick="previewGenerate()"><i class="ti ti-eye"></i>Aperçu</button>
       <button class="btn btn-success" onclick="confirmGenerate()"><i class="ti ti-wand"></i>Générer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PHASE FINALE -->
+<div class="modal-overlay" id="finalPhaseModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3><span class="modal-icon" style="background:#f3e5f5;color:#7b1fa2">🏆</span>Générer la phase finale</h3>
+      <button class="close-btn" onclick="closeFinalPhaseModal()" title="Fermer"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="generate-box" style="background:linear-gradient(135deg,#f3e5f5,#e3f0fd);border-color:#e1bee7">
+        <h4><i class="ti ti-info-circle"></i>Comment ça marche ?</h4>
+        <p style="font-size:12px;color:#555">Les <strong>1ers de chaque poule</strong> sont qualifiés automatiquement. S'il faut compléter pour atteindre une puissance de 2 (4, 8, 16 équipes), les <strong>meilleurs 2èmes</strong> sont ajoutés selon leur classement (points, puis différentiel). Le tirage évite autant que possible que deux équipes de la même poule se rencontrent au premier tour.</p>
+      </div>
+      <div id="finalPhaseSummary" style="margin-bottom:16px"></div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label class="form-label"><i class="ti ti-clock"></i> Heure du 1er match</label>
+          <input class="form-input" id="fpStartTime" type="time" value="14:00">
+        </div>
+        <div class="form-row">
+          <label class="form-label"><i class="ti ti-arrows-horizontal"></i> Intervalle entre matchs (min)</label>
+          <input class="form-input" id="fpInterval" type="number" min="5" step="5" value="30">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label class="form-label"><i class="ti ti-calendar"></i> Date</label>
+          <input class="form-input" id="fpDate" type="date">
+        </div>
+        <div class="form-row">
+          <label class="form-label"><i class="ti ti-map-pin"></i> Terrain par défaut</label>
+          <select class="form-input" id="fpVenue"><option value="">— Aucun / à définir —</option></select>
+        </div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:10px;background:#f9f9f9;border-radius:8px;margin-bottom:8px">
+        <input type="checkbox" id="fpThirdPlace" style="accent-color:#7b1fa2;width:16px;height:16px">
+        <span><i class="ti ti-medal"></i> Inclure la petite finale (match pour la 3e place)</span>
+      </label>
+      <div id="finalPhasePreview" style="margin-top:12px"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeFinalPhaseModal()"><i class="ti ti-x"></i>Annuler</button>
+      <button class="btn" onclick="previewFinalPhase()"><i class="ti ti-eye"></i>Aperçu</button>
+      <button class="btn" style="background:#f3e5f5;color:#7b1fa2;border-color:#e1bee7" onclick="confirmFinalPhase()"><i class="ti ti-trophy"></i>Générer la phase finale</button>
     </div>
   </div>
 </div>
@@ -1689,6 +1737,194 @@ window.confirmGenerate=async function(){
   toast(`${matches.length} matchs créés ✓`);
   closeGenModal();
 };
+
+// ===== FINAL PHASE (KNOCKOUT) GENERATION =====
+
+// Computes the final standings (1st, 2nd, etc.) for every group, using the same
+// points logic as everywhere else in the app (calcPts), then ranked by points,
+// then by point/goal difference as a tiebreaker.
+function computeGroupStandings(){
+  return window._groups.map(g => {
+    const gTeams = window._teams.filter(t => t.group === g.id);
+    const stats = {};
+    gTeams.forEach(t => { stats[t.id] = { id: t.id, name: t.name, group: g.id, p:0, pts:0, pf:0, pa:0 }; });
+    window._matches.filter(m => m.group === g.id && m.status === 'done').forEach(m => {
+      const sA = parseInt(m.scoreA)||0, sB = parseInt(m.scoreB)||0;
+      const pts = calcPts(sA, sB);
+      if(stats[m.teamA]){ stats[m.teamA].p++; stats[m.teamA].pts += pts.A; stats[m.teamA].pf += sA; stats[m.teamA].pa += sB; }
+      if(stats[m.teamB]){ stats[m.teamB].p++; stats[m.teamB].pts += pts.B; stats[m.teamB].pf += sB; stats[m.teamB].pa += sA; }
+    });
+    const ranked = Object.values(stats).sort((a,b) => b.pts - a.pts || (b.pf-b.pa) - (a.pf-a.pa));
+    return { groupId: g.id, groupName: g.name || g.id, ranked };
+  }).filter(g => g.ranked.length > 0);
+}
+
+// Returns the next power of two >= n (e.g. 3 -> 4, 5 -> 8, 9 -> 16). Minimum bracket size is 2.
+function nextPowerOfTwo(n){
+  let p = 2;
+  while(p < n) p *= 2;
+  return p;
+}
+
+// Builds the qualified team list: all group winners first, then best runners-up
+// (ranked by points, then diff) until reaching the required bracket size.
+function computeQualifiedTeams(){
+  const standings = computeGroupStandings();
+  if(!standings.length) return { qualified: [], bracketSize: 0, standings };
+
+  const winners = standings.map(g => ({ ...g.ranked[0], rank: 1 }));
+  const runnersUp = standings.filter(g => g.ranked.length > 1).map(g => ({ ...g.ranked[1], rank: 2 }));
+  runnersUp.sort((a,b) => b.pts - a.pts || (b.pf-b.pa) - (a.pf-a.pa));
+
+  const bracketSize = nextPowerOfTwo(winners.length);
+  const slotsToFill = Math.max(0, bracketSize - winners.length);
+  const bestRunnersUp = runnersUp.slice(0, slotsToFill);
+
+  return { qualified: [...winners, ...bestRunnersUp], bracketSize, standings };
+}
+
+// Seeds the qualified teams into first-round pairs, trying to avoid pairing two teams
+// from the same original group together in round 1 (classic bracket seeding constraint).
+function seedFirstRound(qualified){
+  const pool = qualified.slice();
+  const pairs = [];
+  while(pool.length){
+    const teamA = pool.shift();
+    let idx = pool.findIndex(t => t.group !== teamA.group);
+    if(idx === -1) idx = 0; // no choice but to pair same-group teams if unavoidable
+    const teamB = pool.splice(idx, 1)[0];
+    pairs.push([teamA, teamB || null]);
+  }
+  return pairs;
+}
+
+function roundNameForSize(size){
+  if(size <= 2) return 'Finale';
+  if(size <= 4) return 'Demi-finales';
+  if(size <= 8) return 'Quarts de finale';
+  if(size <= 16) return 'Huitièmes de finale';
+  return `Phase à ${size}`;
+}
+
+function buildFinalPhaseMatches(){
+  const { qualified, bracketSize } = computeQualifiedTeams();
+  if(qualified.length < 2) return { matches: [], qualified, bracketSize };
+
+  const venue = document.getElementById('fpVenue').value;
+  const dateStr = document.getElementById('fpDate').value;
+  const startTime = document.getElementById('fpStartTime').value || '14:00';
+  const intervalMin = Math.max(5, parseInt(document.getElementById('fpInterval').value) || 30);
+  const includeThirdPlace = document.getElementById('fpThirdPlace').checked;
+
+  const pairs = seedFirstRound(qualified);
+  const roundName = roundNameForSize(bracketSize);
+
+  const matches = pairs.map(([a, b]) => ({
+    teamA: a ? a.id : '',
+    teamB: b ? b.id : '',
+    group: null,
+    round: roundName,
+    venue, status: 'planned', scoreA: 0, scoreB: 0, maxPeriods: 4, period: 1,
+  }));
+
+  // If there's more than one round to go (bracketSize > 2), only the first round can be
+  // scheduled with real teams now — later rounds depend on results, so we create placeholder
+  // matches with empty teamA/teamB that the admin fills in manually as winners become known.
+  // (When bracketSize is 2, the match above already IS the final — nothing more to add.)
+  let remainingTeams = bracketSize / 2; // teams that will reach the next round after the round we just built
+  while(remainingTeams >= 2){
+    const name = roundNameForSize(remainingTeams);
+    const matchCount = remainingTeams / 2;
+    for(let i=0; i<matchCount; i++){
+      matches.push({
+        teamA: '', teamB: '', group: null, round: name,
+        venue, status: 'planned', scoreA: 0, scoreB: 0, maxPeriods: 4, period: 1,
+      });
+    }
+    remainingTeams = remainingTeams / 2;
+  }
+
+  if(includeThirdPlace && bracketSize >= 4){
+    matches.push({
+      teamA: '', teamB: '', group: null, round: 'Petite finale',
+      venue, status: 'planned', scoreA: 0, scoreB: 0, maxPeriods: 4, period: 1,
+    });
+  }
+
+  // Assign scheduled times sequentially across all generated matches
+  if(dateStr){
+    const [h,m] = startTime.split(':').map(Number);
+    let current = new Date(dateStr+'T00:00:00');
+    current.setHours(h, m, 0, 0);
+    matches.forEach(match => {
+      match.scheduledAt = new Date(current);
+      current = new Date(current.getTime() + intervalMin*60000);
+    });
+  }
+
+  return { matches, qualified, bracketSize };
+}
+
+window.openFinalPhaseModal=function(){
+  const venueEl = document.getElementById('fpVenue');
+  venueEl.innerHTML = '<option value="">— Aucun / à définir —</option>' + window._grounds.map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
+  const dateEl = document.getElementById('fpDate');
+  if(!dateEl.value){
+    const today = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    dateEl.value = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+  }
+  document.getElementById('finalPhasePreview').innerHTML = '';
+
+  const { qualified, bracketSize, standings } = computeQualifiedTeams();
+  const summaryEl = document.getElementById('finalPhaseSummary');
+  if(!standings.length){
+    summaryEl.innerHTML = `<div style="background:#fde8e8;color:#c0392b;border-radius:8px;padding:10px 12px;font-size:12.5px"><i class="ti ti-alert-circle"></i> Aucun groupe avec des équipes trouvé. Crée des groupes et assigne des équipes avant de générer la phase finale.</div>`;
+    document.getElementById('fpThirdPlace').disabled = true;
+  } else {
+    const winners = qualified.filter(t=>t.rank===1).length;
+    const runnersUp = qualified.filter(t=>t.rank===2).length;
+    summaryEl.innerHTML = `<div style="background:#f9f9f9;border-radius:8px;padding:12px">
+      <div style="font-size:12.5px;font-weight:600;color:#7b1fa2;margin-bottom:6px"><i class="ti ti-trophy"></i> ${qualified.length} équipe(s) qualifiée(s) pour un tableau à ${bracketSize}</div>
+      <div style="font-size:12px;color:#666">${winners} 1er(s) de poule${runnersUp>0?` + ${runnersUp} meilleur(s) 2ème(s)`:''}</div>
+    </div>`;
+    document.getElementById('fpThirdPlace').disabled = bracketSize < 4;
+  }
+
+  document.getElementById('finalPhaseModal').classList.add('show');
+};
+window.closeFinalPhaseModal=function(){document.getElementById('finalPhaseModal').classList.remove('show');};
+
+window.previewFinalPhase=function(){
+  const { matches, qualified, bracketSize } = buildFinalPhaseMatches();
+  const el = document.getElementById('finalPhasePreview');
+  if(qualified.length < 2){
+    el.innerHTML = `<div style="color:#c0392b;font-size:13px;padding:12px;background:#fde8e8;border-radius:8px"><i class="ti ti-alert-circle"></i> Pas assez d'équipes qualifiées pour générer une phase finale.</div>`;
+    return;
+  }
+  const realMatches = matches.filter(m => m.teamA && m.teamB);
+  const placeholderMatches = matches.filter(m => !(m.teamA && m.teamB));
+  el.innerHTML = `<div style="background:#f9f9f9;border-radius:8px;padding:12px">
+    <div style="font-size:12px;font-weight:600;color:#7b1fa2;margin-bottom:8px"><i class="ti ti-eye"></i> Aperçu — ${matches.length} match(s) au total</div>
+    ${realMatches.map(m => `<div style="font-size:12px;padding:5px 0;border-bottom:0.5px solid #eee;display:flex;align-items:center;gap:8px">
+      <span class="badge badge-purple" style="font-size:10px">${m.round}</span>
+      ${teamName(m.teamA)} <span style="color:#bbb">vs</span> ${teamName(m.teamB)}
+      ${m.scheduledAt ? `<span style="color:#999;margin-left:auto">${m.scheduledAt.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>` : ''}
+    </div>`).join('')}
+    ${placeholderMatches.length ? `<div style="font-size:11.5px;color:#999;margin-top:8px;padding-top:8px;border-top:0.5px solid #eee"><i class="ti ti-info-circle"></i> ${placeholderMatches.length} match(s) supplémentaire(s) seront créés en attente (${[...new Set(placeholderMatches.map(m=>m.round))].join(', ')}) — à compléter manuellement une fois les vainqueurs connus.</div>` : ''}
+  </div>`;
+};
+
+window.confirmFinalPhase=async function(){
+  const { matches, qualified } = buildFinalPhaseMatches();
+  if(qualified.length < 2) return toast('Pas assez d\'équipes qualifiées','err');
+  if(!confirm(`Créer ${matches.length} match(s) de phase finale ?`)) return;
+  for(const m of matches) await addDoc(collection(db,'matches'),{...m,updatedAt:serverTimestamp()});
+  logActivity(`Phase finale générée : ${matches.length} match(s), ${qualified.length} équipe(s) qualifiée(s)`);
+  toast(`Phase finale créée ✓ (${matches.length} matchs)`);
+  closeFinalPhaseModal();
+};
+
 
 // FIREBASE LISTENERS
 onSnapshot(doc(db,'settings','tournament'),snap=>{
