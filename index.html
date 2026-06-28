@@ -658,34 +658,8 @@ function renderStandings(){
 // ===== BRACKET TAB =====
 function renderBracket(){
   const knockout = matches.filter(m=>m.round);
-  const groupPhaseMatches = matches.filter(m=>m.group);
 
   let html = '';
-
-  // Group phase summary
-  if(groupPhaseMatches.length){
-    const doneCount = groupPhaseMatches.filter(m=>m.status==='done').length;
-    html += `<div class="card" style="margin-bottom:16px">
-      <div class="card-head"><h3>Phase de groupes</h3><span class="badge badge-blue">${doneCount}/${groupPhaseMatches.length} matchs joués</span></div>
-      <div class="card-body" style="font-size:13px;color:#666">
-        ${groups.map(g=>{
-          const gTeams = teams.filter(t=>t.group===g.id);
-          const stats = {};
-          gTeams.forEach(t=>{stats[t.id]={name:t.name,color:t.color,logoUrl:t.logoUrl||null,pts:0,p:0}});
-          matches.filter(m=>m.group===g.id&&m.status==='done').forEach(m=>{
-            const sA=parseInt(m.scoreA)||0,sB=parseInt(m.scoreB)||0;
-            const pts=calcPts(sA,sB);
-            if(stats[m.teamA]){stats[m.teamA].p++;stats[m.teamA].pts+=pts.A;}
-            if(stats[m.teamB]){stats[m.teamB].p++;stats[m.teamB].pts+=pts.B;}
-          });
-          const sorted = Object.values(stats).sort((a,b)=>b.pts-a.pts);
-          return `<div style="margin-bottom:10px"><strong>Groupe ${g.name||g.id}</strong><br>${sorted.map((t,i)=>
-            `<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0">${teamLogoByObj(t)}${i===0?'<strong>':''}<span>${t.name}</span>${i===0?'</strong>':''} <span style="color:#bbb">(${t.pts}pts)</span></span>`
-          ).join('')}</div>`;
-        }).join('')}
-      </div>
-    </div>`;
-  }
 
   // Knockout bracket — auto-organized into columns based on round size (fewer matches = later round)
   if(knockout.length){
@@ -726,13 +700,8 @@ function renderBracket(){
       html += '</div></div>';
     });
     html += `</div>`;
-  } else if(!groupPhaseMatches.length){
-    html = `<div class="empty"><i class="ti ti-tournament"></i>Le tableau n'est pas encore disponible</div>`;
   } else {
-    html += `<div class="card"><div class="card-body" style="text-align:center;color:#bbb;padding:32px">
-      <i class="ti ti-tournament" style="font-size:32px;display:block;margin-bottom:12px"></i>
-      La phase finale commencera une fois les groupes terminés
-    </div></div>`;
+    html = `<div class="empty"><i class="ti ti-tournament"></i>Le tableau n'est pas encore disponible</div>`;
   }
 
   document.getElementById('bracketSection').innerHTML = html;
