@@ -550,9 +550,19 @@
     <div class="modal-body">
       <div class="generate-box" style="background:linear-gradient(135deg,#f3e5f5,#e3f0fd);border-color:#e1bee7">
         <h4><i class="ti ti-info-circle"></i>Comment ça marche ?</h4>
-        <p style="font-size:12px;color:#555">Les <strong>1ers de chaque poule</strong> sont qualifiés automatiquement. S'il faut compléter pour atteindre une puissance de 2 (4, 8, 16 équipes), les <strong>meilleurs 2èmes</strong> sont ajoutés selon leur classement (points, puis différentiel). Le tirage évite autant que possible que deux équipes de la même poule se rencontrent au premier tour.</p>
+        <p style="font-size:12px;color:#555">Les <strong>1ers de chaque poule</strong> sont qualifiés automatiquement. S'il faut compléter pour atteindre la taille du tableau choisie, les <strong>meilleurs 2èmes</strong> puis, si besoin, les <strong>meilleurs 3èmes</strong> sont ajoutés selon leur classement (points, puis différentiel). Le tirage sépare les équipes de même rang et de même poule autant que possible.</p>
       </div>
       <div id="finalPhaseSummary" style="margin-bottom:16px"></div>
+      <div class="form-row">
+        <label class="form-label"><i class="ti ti-tournament"></i> Format du tableau</label>
+        <select class="form-input" id="fpBracketSize" onchange="onBracketSizeChange()">
+          <option value="auto">Automatique (selon le nombre de poules)</option>
+          <option value="2">Finale uniquement (2 équipes)</option>
+          <option value="4">Demi-finales (4 équipes)</option>
+          <option value="8">Quarts de finale (8 équipes)</option>
+          <option value="16">Huitièmes de finale (16 équipes)</option>
+        </select>
+      </div>
       <div class="form-grid">
         <div class="form-row">
           <label class="form-label"><i class="ti ti-clock"></i> Heure du 1er match</label>
@@ -1786,20 +1796,17 @@ function bracketSeedOrder(size){
 // Places qualified teams into bracket slots so that:
 // 1. All rank-1 (group winners) teams are spread across the bracket as top seeds — they can only
 //    meet each other in the final (or as late as possible), following standard seeding.
-// 2. All rank-2 (best runners-up) teams fill the remaining "bottom seed" slots, and are placed so
-//    that two rank-2 teams never face each other in round 1 — only a rank-1 vs rank-2 pairing.
+// 2. Rank-2 (best runners-up) and rank-3 (best 3rd-placed) teams fill the remaining slots in seed
+//    priority order, and same-rank teams are kept apart in round 1 whenever possible.
 // 3. Within those constraints, teams from the same original group are kept apart in round 1
 //    whenever a swap can achieve that without breaking rules 1 and 2.
 function seedQualifiedTeams(qualified, bracketSize){
   const seedOrder = bracketSeedOrder(bracketSize); // slot index (0-based) -> seed number (1-based)
-  const winners = qualified.filter(t => t.rank === 1);
-  const runnersUp = qualified.filter(t => t.rank === 2);
+  const byRank = (r) => qualified.filter(t => t.rank === r);
+  const orderedBySeedPriority = [...byRank(1), ...byRank(2), ...byRank(3)];
 
-  // Seed numbers 1..winners.length are the group winners (strongest seeds, spread by seedOrder).
-  // Seed numbers after that are the best runners-up, ordered by their own ranking (best runner-up = next seed).
   const seedToTeam = {};
-  winners.forEach((team, i) => { seedToTeam[i+1] = team; });
-  runnersUp.forEach((team, i) => { seedToTeam[winners.length + i + 1] = team; });
+  orderedBySeedPriority.forEach((team, i) => { seedToTeam[i+1] = team; });
 
   const slots = seedOrder.map(seedNum => seedToTeam[seedNum] || null);
 
@@ -1830,19 +1837,40 @@ function seedQualifiedTeams(qualified, bracketSize){
   return pairs;
 }
 
-function computeQualifiedTeams(){
+// Builds the qualified team list: all group winners first, then best runners-up
+// (ranked by points, then diff), then best 3rd-placed teams if still needed, until
+// reaching the target bracket size. If forcedSize is null, the size auto-adjusts to
+// the next power of two that fits the number of group winners.
+function computeQualifiedTeams(forcedSize){
   const standings = computeGroupStandings();
-  if(!standings.length) return { qualified: [], bracketSize: 0, standings };
+  if(!standings.length) return { qualified: [], bracketSize: 0, standings, shortfall: 0 };
 
-  const winners = standings.map(g => ({ ...g.ranked[0], rank: 1 }));
-  const runnersUp = standings.filter(g => g.ranked.length > 1).map(g => ({ ...g.ranked[1], rank: 2 }));
-  runnersUp.sort((a,b) => b.pts - a.pts || (b.pf-b.pa) - (a.pf-a.pa));
+  const byRank = (rankIdx) => standings
+    .filter(g => g.ranked.length > rankIdx)
+    .map(g => ({ ...g.ranked[rankIdx], rank: rankIdx + 1 }))
+    .sort((a,b) => b.pts - a.pts || (b.pf-b.pa) - (a.pf-a.pa));
 
-  const bracketSize = nextPowerOfTwo(winners.length);
-  const slotsToFill = Math.max(0, bracketSize - winners.length);
-  const bestRunnersUp = runnersUp.slice(0, slotsToFill);
+  const winnersInGroupOrder = standings.map(g => ({ ...g.ranked[0], rank: 1 }));
+  const runnersUp = byRank(1);
+  const thirds = byRank(2);
 
-  return { qualified: [...winners, ...bestRunnersUp], bracketSize, standings };
+  const bracketSize = forcedSize || nextPowerOfTwo(winnersInGroupOrder.length);
+
+  let qualified = [...winnersInGroupOrder];
+  let pool = [...runnersUp];
+  while(qualified.length < bracketSize && pool.length){
+    qualified.push(pool.shift());
+  }
+  if(qualified.length < bracketSize){
+    pool = [...thirds];
+    while(qualified.length < bracketSize && pool.length){
+      qualified.push(pool.shift());
+    }
+  }
+
+  const shortfall = Math.max(0, bracketSize - qualified.length);
+
+  return { qualified, bracketSize, standings, shortfall };
 }
 
 function roundNameForSize(size){
@@ -1854,8 +1882,10 @@ function roundNameForSize(size){
 }
 
 function buildFinalPhaseMatches(){
-  const { qualified, bracketSize } = computeQualifiedTeams();
-  if(qualified.length < 2) return { matches: [], qualified, bracketSize };
+  const sizeChoice = document.getElementById('fpBracketSize').value;
+  const forcedSize = sizeChoice === 'auto' ? null : parseInt(sizeChoice);
+  const { qualified, bracketSize, shortfall } = computeQualifiedTeams(forcedSize);
+  if(qualified.length < 2) return { matches: [], qualified, bracketSize, shortfall };
 
   const venue = document.getElementById('fpVenue').value;
   const dateStr = document.getElementById('fpDate').value;
@@ -1922,25 +1952,47 @@ window.openFinalPhaseModal=function(){
     dateEl.value = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
   }
   document.getElementById('finalPhasePreview').innerHTML = '';
-
-  const { qualified, bracketSize, standings } = computeQualifiedTeams();
-  const summaryEl = document.getElementById('finalPhaseSummary');
-  if(!standings.length){
-    summaryEl.innerHTML = `<div style="background:#fde8e8;color:#c0392b;border-radius:8px;padding:10px 12px;font-size:12.5px"><i class="ti ti-alert-circle"></i> Aucun groupe avec des équipes trouvé. Crée des groupes et assigne des équipes avant de générer la phase finale.</div>`;
-    document.getElementById('fpThirdPlace').disabled = true;
-  } else {
-    const winners = qualified.filter(t=>t.rank===1).length;
-    const runnersUp = qualified.filter(t=>t.rank===2).length;
-    summaryEl.innerHTML = `<div style="background:#f9f9f9;border-radius:8px;padding:12px">
-      <div style="font-size:12.5px;font-weight:600;color:#7b1fa2;margin-bottom:6px"><i class="ti ti-trophy"></i> ${qualified.length} équipe(s) qualifiée(s) pour un tableau à ${bracketSize}</div>
-      <div style="font-size:12px;color:#666">${winners} 1er(s) de poule${runnersUp>0?` + ${runnersUp} meilleur(s) 2ème(s)`:''}</div>
-    </div>`;
-    document.getElementById('fpThirdPlace').disabled = bracketSize < 4;
-  }
-
+  document.getElementById('fpBracketSize').value = 'auto';
+  updateFinalPhaseSummary();
   document.getElementById('finalPhaseModal').classList.add('show');
 };
 window.closeFinalPhaseModal=function(){document.getElementById('finalPhaseModal').classList.remove('show');};
+
+window.onBracketSizeChange=function(){
+  updateFinalPhaseSummary();
+};
+
+function updateFinalPhaseSummary(){
+  const sizeChoice = document.getElementById('fpBracketSize').value;
+  const forcedSize = sizeChoice === 'auto' ? null : parseInt(sizeChoice);
+  const { qualified, bracketSize, standings, shortfall } = computeQualifiedTeams(forcedSize);
+  const summaryEl = document.getElementById('finalPhaseSummary');
+
+  if(!standings.length){
+    summaryEl.innerHTML = `<div style="background:#fde8e8;color:#c0392b;border-radius:8px;padding:10px 12px;font-size:12.5px"><i class="ti ti-alert-circle"></i> Aucun groupe avec des équipes trouvé. Crée des groupes et assigne des équipes avant de générer la phase finale.</div>`;
+    document.getElementById('fpThirdPlace').disabled = true;
+    return;
+  }
+
+  const winners = qualified.filter(t=>t.rank===1).length;
+  const runnersUp = qualified.filter(t=>t.rank===2).length;
+  const thirds = qualified.filter(t=>t.rank===3).length;
+  const parts = [`${winners} 1er(s) de poule`];
+  if(runnersUp>0) parts.push(`${runnersUp} meilleur(s) 2ème(s)`);
+  if(thirds>0) parts.push(`${thirds} meilleur(s) 3ème(s)`);
+
+  let warningHtml = '';
+  if(shortfall > 0){
+    warningHtml = `<div style="background:#fff3e0;color:#b7620c;border-radius:8px;padding:8px 10px;font-size:12px;margin-top:8px"><i class="ti ti-alert-triangle"></i> Pas assez d'équipes qualifiables (1ers/2èmes/3èmes confondus) pour remplir ce format : ${shortfall} place(s) resteront vides ("à déterminer").</div>`;
+  }
+
+  summaryEl.innerHTML = `<div style="background:#f9f9f9;border-radius:8px;padding:12px">
+    <div style="font-size:12.5px;font-weight:600;color:#7b1fa2;margin-bottom:6px"><i class="ti ti-trophy"></i> ${qualified.length} équipe(s) qualifiée(s) pour un tableau à ${bracketSize} (${roundNameForSize(bracketSize)})</div>
+    <div style="font-size:12px;color:#666">${parts.join(' + ')}</div>
+    ${warningHtml}
+  </div>`;
+  document.getElementById('fpThirdPlace').disabled = bracketSize < 4;
+}
 
 window.previewFinalPhase=function(){
   const { matches, qualified, bracketSize } = buildFinalPhaseMatches();
